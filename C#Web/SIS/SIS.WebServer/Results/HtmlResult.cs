@@ -10,6 +10,7 @@ namespace SIS.WebServer.Results
         public HtmlResult(string content, HttpResponseStatusCode statusCode)
             :base(statusCode)
         {
+
             Headers.AddHeader(new HttpHeader("Content-Type", "text/html; charset-utf8"));
             Content = Encoding.UTF8.GetBytes(content);
         }

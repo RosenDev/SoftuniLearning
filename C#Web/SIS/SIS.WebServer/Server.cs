@@ -30,7 +30,7 @@ namespace SIS.WebServer
             while (isRunning)
             {
                 Console.WriteLine($"Waiting for client...");
-                var client = listener.AcceptSocketAsync().GetAwaiter().GetResult();
+                var client = listener.AcceptSocket();
                 Task.Run(() => Listen(client));
             }
         }

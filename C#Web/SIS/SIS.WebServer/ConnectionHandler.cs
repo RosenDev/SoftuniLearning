@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using SIS.HTTP.Common;
+using SIS.HTTP.Cookies;
 using SIS.HTTP.Enums;
 using SIS.HTTP.Exceptions;
 using SIS.HTTP.Request;
 using SIS.HTTP.Request.Interfaces;
 using SIS.HTTP.Responce;
 using SIS.HTTP.Responce.Interfaces;
+using SIS.HTTP.Sessions;
 using SIS.WebServer.Results;
 using SIS.WebServer.Routing.Interfaces;
 
@@ -27,18 +30,43 @@ namespace SIS.WebServer
             this.routingTable = routingTable;
         }
 
+        private string SetRequestSession(IHttpRequest request)
+        {
+            string sessionId = null;
+            if (request.Cookies.ContainsCookie(GlobalConstants.SessionCookieKey))
+            {
+                var cookie = request.Cookies.GetCookie(GlobalConstants.SessionCookieKey);
+                sessionId = cookie.Value;
+                request.Session = HttpSessionStorage.GetSession(sessionId);
+            }
+            else
+            {
+                request.Session = HttpSessionStorage.GetSession(Guid.NewGuid().ToString());
+            }
+
+            return sessionId;
+        }
+
+        private void SetResponseSession(IHttpResponse response,string sessionId)
+        {
+            if (sessionId!=null)
+            {
+                response.AddCookie(new HttpCookie("SIS_ID",sessionId));
+            }
+        }
         public async Task ProcessRequestAsync()
         {
             IHttpResponse response = null;
-
+     
             try
             {
                 var request =await ReadRequestAsync();
                 if (request != null)
                 {
                     Console.WriteLine($"Processing: {request.RequestMethod} {request.Path}...");
-                     response = HandleRequest(request);
-                   
+                    var sessionId = SetRequestSession(request);
+                    response = HandleRequest(request);
+                   SetResponseSession(response,sessionId);
 
                 }
 
@@ -60,20 +88,25 @@ namespace SIS.WebServer
         {
             var req = new StringBuilder();
             var data = new ArraySegment<byte>(new byte[1024]);
+            var obj= new object();
             while (true)
             {
-                var bytesToRead = await client.ReceiveAsync(data.Array, SocketFlags.None);
-                if (bytesToRead==0)
-                {
-                    break;
-                }
+              
+                    var bytesToRead = await client.ReceiveAsync(data.Array, SocketFlags.None);
+                    if (bytesToRead == 0)
+                    {
+                        break;
+                    }
 
-                var bytesAsString = Encoding.UTF8.GetString(data.Array,0,bytesToRead);
-                req.Append(bytesAsString);
-                if (bytesToRead<1023)
-                {
-                    break;
-                }
+
+
+                    var bytesAsString = Encoding.UTF8.GetString(data.Array, 0, bytesToRead);
+                    req.Append(bytesAsString);
+                    if (bytesToRead < 1023)
+                    {
+                        break;
+                    }
+                
 
                 if (req.Length==0)
                 {
@@ -81,7 +114,7 @@ namespace SIS.WebServer
                 }
                
             }
-            return new HttpRequest(req.ToString().Trim());
+            return new HttpRequest(req.ToString());
         }
 
         private IHttpResponse HandleRequest(IHttpRequest request)

@@ -22,7 +22,7 @@ namespace SIS.HTTP.Headers
         public bool ContainsHeader(string header)
         {
             CoreValidator.ThrowIfEmpty(header,nameof(header));
-            return header.Contains(header);
+            return headers.ContainsKey(header);
         }
 
         public HttpHeader GetHeader(string header)
