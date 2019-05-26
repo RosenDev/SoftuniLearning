@@ -3,7 +3,7 @@ using SIS.HTTP.Sessions.Interfaces;
 
 namespace SIS.HTTP.Sessions
 {
-    public class HttpSessionStorage
+    public static class HttpSessionStorage
     {
         private static readonly ConcurrentDictionary<string, IHttpSession> sessions
             =new ConcurrentDictionary<string, IHttpSession>();

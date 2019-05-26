@@ -19,8 +19,8 @@ namespace SIS.HTTP.Cookies
 
         public void AddCookie(IHttpCookie cookie)
         {
-            
-            cookies.Add(cookie.Key,cookie);
+
+            cookies[cookie.Key] = cookie;
         }
 
         public bool ContainsCookie(string key)
@@ -49,11 +49,7 @@ namespace SIS.HTTP.Cookies
             }
         }
 
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            return sb.ToString();
-        }
+        
 
         IEnumerator IEnumerable.GetEnumerator()
         {

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +9,7 @@ using SIS.HTTP.Common;
 using SIS.HTTP.Cookies;
 using SIS.HTTP.Enums;
 using SIS.HTTP.Exceptions;
+using SIS.HTTP.Extensions;
 using SIS.HTTP.Request;
 using SIS.HTTP.Request.Interfaces;
 using SIS.HTTP.Responce;
@@ -21,6 +24,7 @@ namespace SIS.WebServer
     {
         private readonly Socket client;
         private readonly IServerRoutingTable routingTable;
+        
 
         public ConnectionHandler(Socket client, IServerRoutingTable routingTable)
         {
@@ -28,30 +32,35 @@ namespace SIS.WebServer
             CoreValidator.ThrowIfNull(routingTable,nameof(routingTable));
             this.client = client;
             this.routingTable = routingTable;
+           
         }
 
         private string SetRequestSession(IHttpRequest request)
         {
-            string sessionId = null;
+            string sessionId;//todo
             if (request.Cookies.ContainsCookie(GlobalConstants.SessionCookieKey))
             {
                 var cookie = request.Cookies.GetCookie(GlobalConstants.SessionCookieKey);
                 sessionId = cookie.Value;
-                request.Session = HttpSessionStorage.GetSession(sessionId);
+               
             }
             else
             {
-                request.Session = HttpSessionStorage.GetSession(Guid.NewGuid().ToString());
+                sessionId = Guid.NewGuid().ToString();
             }
-
-            return sessionId;
+            request.Session = HttpSessionStorage.GetSession(sessionId);
+            return request.Session.Id;
         }
 
         private void SetResponseSession(IHttpResponse response,string sessionId)
         {
             if (sessionId!=null)
             {
-                response.AddCookie(new HttpCookie("SIS_ID",sessionId));
+              
+                    response.AddCookie(new HttpCookie(GlobalConstants.SessionCookieKey, sessionId));
+                
+               //response.Cookies.GetCookie("SIS_ID").Expires=DateTime.UtcNow.AddDays(-1);
+  
             }
         }
         public async Task ProcessRequestAsync()
@@ -88,7 +97,7 @@ namespace SIS.WebServer
         {
             var req = new StringBuilder();
             var data = new ArraySegment<byte>(new byte[1024]);
-            var obj= new object();
+ 
             while (true)
             {
               
@@ -121,12 +130,28 @@ namespace SIS.WebServer
         {
             if (!routingTable.Contains(request.RequestMethod,request.Path))
             {
-                return new TextResult($"Route with method {request.RequestMethod} and path \"{request.Path}\" not found",HttpResponseStatusCode.NotFound);
+                return ReturnIfResource(request);
 
             }
 
+
             return routingTable.Get(request.RequestMethod, request.Path)
                 .Invoke(request);
+        }
+
+        private IHttpResponse ReturnIfResource(IHttpRequest request)
+        {
+            var basePath = "/../";
+            var assembly = Assembly.GetExecutingAssembly().Location;
+            var resourcePath = "Resources";
+            var requestedResource = request.Path;
+            var fullPath =  assembly +basePath+ resourcePath + requestedResource;
+            if (File.Exists(fullPath))
+            {
+                return new InlineResourceResult(File.ReadAllBytes(fullPath),HttpResponseStatusCode.Found);
+
+            }
+            return new TextResult(HttpResponseStatusCode.NotFound.GetStatusString(),HttpResponseStatusCode.NotFound);
         }
 
         private async Task PrepareResponseAsync(IHttpResponse response)

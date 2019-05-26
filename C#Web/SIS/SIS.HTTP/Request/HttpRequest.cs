@@ -10,6 +10,7 @@ using SIS.HTTP.Exceptions;
 using SIS.HTTP.Headers;
 using SIS.HTTP.Headers.Interfaces;
 using SIS.HTTP.Request.Interfaces;
+using SIS.HTTP.Sessions;
 using SIS.HTTP.Sessions.Interfaces;
 
 namespace SIS.HTTP.Request
@@ -214,6 +215,7 @@ namespace SIS.HTTP.Request
             QueryData = new Dictionary<string, List<object>>();
             Cookies=new HttpCookieCollection();
             Headers = new HttpHeaderCollection();
+            Session=new HttpSession("1");
             Url = string.Empty;
             ParseRequest(requestString);
            
