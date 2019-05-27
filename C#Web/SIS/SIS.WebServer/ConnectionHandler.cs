@@ -15,6 +15,7 @@ using SIS.HTTP.Request.Interfaces;
 using SIS.HTTP.Responce;
 using SIS.HTTP.Responce.Interfaces;
 using SIS.HTTP.Sessions;
+using SIS.HTTP.Sessions.Interfaces;
 using SIS.WebServer.Results;
 using SIS.WebServer.Routing.Interfaces;
 
@@ -37,30 +38,38 @@ namespace SIS.WebServer
 
         private string SetRequestSession(IHttpRequest request)
         {
-            string sessionId;//todo
             if (request.Cookies.ContainsCookie(GlobalConstants.SessionCookieKey))
             {
-                var cookie = request.Cookies.GetCookie(GlobalConstants.SessionCookieKey);
-                sessionId = cookie.Value;
-               
+                var cookie = request
+                    .Cookies
+                    .GetCookie(GlobalConstants.SessionCookieKey);
+
+                string sessionId = cookie.Value;
+
+                if (HttpSessionStorage.ContainsSession(sessionId))
+                {
+                    request.Session = HttpSessionStorage.GetSession(sessionId);
+                }
             }
-            else
+
+            if (request.Session == null)
             {
-                sessionId = Guid.NewGuid().ToString();
+                string sessionId = Guid.NewGuid().ToString();
+
+                request.Session = HttpSessionStorage.GetSession(sessionId);
             }
-            request.Session = HttpSessionStorage.GetSession(sessionId);
-            return request.Session.Id;
+
+            return request.Session?.Id;
         }
 
         private void SetResponseSession(IHttpResponse response,string sessionId)
         {
-            if (sessionId!=null)
+            IHttpSession responseSession = HttpSessionStorage.GetSession(sessionId);
+
+            if (responseSession.IsNew)
             {
-              
-                    response.AddCookie(new HttpCookie(GlobalConstants.SessionCookieKey, sessionId));
-                
-               //response.Cookies.GetCookie("SIS_ID").Expires=DateTime.UtcNow.AddDays(-1);
-  
+                responseSession.IsNew = false;
+                response.AddCookie(new HttpCookie(GlobalConstants.SessionCookieKey, responseSession.Id));
             }
         }
         public async Task ProcessRequestAsync()
@@ -123,7 +132,8 @@ namespace SIS.WebServer
                 }
                
             }
-            return new HttpRequest(req.ToString());
+            var request= new HttpRequest(req.ToString());
+            return request;
         }
 
         private IHttpResponse HandleRequest(IHttpRequest request)
@@ -141,14 +151,15 @@ namespace SIS.WebServer
 
         private IHttpResponse ReturnIfResource(IHttpRequest request)
         {
-            var basePath = "/../";
-            var assembly = Assembly.GetExecutingAssembly().Location;
+            var basePath = "..\\..\\..\\";
+            var assembly = Assembly.GetExecutingAssembly().Location.Replace("SIS.WebServer.dll", "");
+            assembly=assembly.Replace("\\", "/");
             var resourcePath = "Resources";
             var requestedResource = request.Path;
-            var fullPath =  assembly +basePath+ resourcePath + requestedResource;
+            var fullPath =  assembly + resourcePath + requestedResource;
             if (File.Exists(fullPath))
             {
-                return new InlineResourceResult(File.ReadAllBytes(fullPath),HttpResponseStatusCode.Found);
+                return new InlineResourceResult(File.ReadAllBytes(fullPath),HttpResponseStatusCode.Ok);
 
             }
             return new TextResult(HttpResponseStatusCode.NotFound.GetStatusString(),HttpResponseStatusCode.NotFound);

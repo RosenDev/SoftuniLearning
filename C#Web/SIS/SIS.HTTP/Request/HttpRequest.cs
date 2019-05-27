@@ -39,7 +39,7 @@ namespace SIS.HTTP.Request
                 var unparsedCookies = value.Split("; ", StringSplitOptions.RemoveEmptyEntries);
                 foreach (var unparsedCookie in unparsedCookies)
                 {
-                    var cookieKvp = unparsedCookie.Split("=");
+                    var cookieKvp = unparsedCookie.Split("=",2);
                     IHttpCookie cookie= new HttpCookie(cookieKvp[0],cookieKvp[1],false);
                     Cookies.AddCookie(cookie);
                 }
@@ -180,7 +180,7 @@ namespace SIS.HTTP.Request
                 throw new BadRequestException();
             }
             ParseRequestMethod(firstLine);
-            ParseCookies();
+           
             var newLineIndex = Array.LastIndexOf(requestContent, "");
             if (newLineIndex==-1)
             {
@@ -204,7 +204,7 @@ namespace SIS.HTTP.Request
             }
             ParseRequestUrl(firstLine);
             ParseRequestPath();
-            
+            ParseCookies();
 
         }
 
@@ -215,7 +215,7 @@ namespace SIS.HTTP.Request
             QueryData = new Dictionary<string, List<object>>();
             Cookies=new HttpCookieCollection();
             Headers = new HttpHeaderCollection();
-            Session=new HttpSession("1");
+       
             Url = string.Empty;
             ParseRequest(requestString);
            

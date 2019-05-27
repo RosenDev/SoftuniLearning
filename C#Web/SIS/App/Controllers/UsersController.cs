@@ -29,11 +29,17 @@ namespace App.Controllers
                                                              x.Password == password);
                 if (user!=null)
                 {
-                    //TODO add redirect url after logging in
+          
                     
-                   req.Session.AddParameter("username",username);
+                  SignIn(req,user);
                    return Redirect("/Home/Index-Logged");
                 }
+                else
+                {
+
+                    Console.WriteLine("False");
+                }
+
             }
             return Redirect("/Users/Login");
         }

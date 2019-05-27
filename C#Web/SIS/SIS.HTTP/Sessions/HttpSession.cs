@@ -13,8 +13,11 @@ namespace SIS.HTTP.Sessions
         {
             parameters=new Dictionary<string, object>();
             Id = id;
+            IsNew = true;
         }
         public string Id { get; }
+        public bool IsNew { get; set; }
+
         public object GetParameter(string name)
         {
             CoreValidator.ThrowIfEmpty(name,nameof(name));

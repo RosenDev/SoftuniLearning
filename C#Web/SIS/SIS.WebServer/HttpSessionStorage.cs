@@ -1,7 +1,8 @@
 ﻿using System.Collections.Concurrent;
+using SIS.HTTP.Sessions;
 using SIS.HTTP.Sessions.Interfaces;
 
-namespace SIS.HTTP.Sessions
+namespace SIS.WebServer
 {
     public static class HttpSessionStorage
     {
@@ -13,6 +14,11 @@ namespace SIS.HTTP.Sessions
             return sessions.GetOrAdd(id, _ => new HttpSession(id));
 
         }
-       
+
+        public static bool ContainsSession(string sessionId)
+        {
+
+            return sessions.ContainsKey(sessionId);
+        }
     }
 }

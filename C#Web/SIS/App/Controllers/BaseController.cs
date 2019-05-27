@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using App.Models;
 using SIS.HTTP.Cookies;
 using SIS.HTTP.Enums;
 using SIS.HTTP.Request.Interfaces;
@@ -30,6 +31,17 @@ namespace App.Controllers
 
             return viewContent;
         }
+
+        protected void SignIn(IHttpRequest request, User user)
+        {
+            request.Session.AddParameter("username",user.Username);
+        }
+
+        protected void SignOut(IHttpRequest request)
+        {
+            request.Session.ClearParameters();
+        }
+        
         protected IHttpResponse View([CallerMemberName] string view = null)
         {
             string controllerName = this.GetType().Name.Replace("Controller", string.Empty);
