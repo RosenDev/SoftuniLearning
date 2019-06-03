@@ -10,6 +10,11 @@ namespace App.Models
         public string Name { get; set; }
         public string Cover { get; set; }
         public decimal Price { get; set; }
-        public ICollection<Track> Tracks { get; set; }
+        public List<Track> Tracks { get; set; }
+
+        public Album()
+        {
+            Tracks=new List<Track>();
+        }
       }
 }

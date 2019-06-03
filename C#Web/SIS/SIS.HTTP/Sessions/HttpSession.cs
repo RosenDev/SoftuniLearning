@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading;
 using SIS.HTTP.Common;
-using SIS.HTTP.Sessions.Interfaces;
 
 namespace SIS.HTTP.Sessions
 {

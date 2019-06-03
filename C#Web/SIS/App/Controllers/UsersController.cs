@@ -2,87 +2,80 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using App.Data;
 using App.Models;
-using SIS.HTTP.Request.Interfaces;
-using SIS.HTTP.Responce.Interfaces;
+using App.Services;
+using App.ViewModels;
+using SIS.WebServer;
+using SIS.WebServer.Attributes;
 using SIS.WebServer.Results;
 
 namespace App.Controllers
 {
     public class UsersController:BaseController
     {//GET
-        public IHttpResponse Login(IHttpRequest request)
+        private readonly IUserService userService= new UserService();
+        [HttpGet]
+        public ActionResult Login()
         {
 
             return View();
         }
         //post
-        public IHttpResponse LoginConfirm(IHttpRequest req)
+        [HttpPost(action:"Login")]
+        public ActionResult LoginConfirm()
         {
-            var username = (string)req.FormData["username"][0];
-            var password = (string)req.FormData["password"][0];
-            using (var context= new AppDbContext())
-            {
-                password = MD5(password);
-                var user = context.Users.FirstOrDefault(x => x.Username == username && 
-                                                             x.Password == password);
+            var username = (string)Request.FormData["username"][0];
+            var password = (string)Request.FormData["password"][0];
+            var user = userService.GetUser(username, password);
                 if (user!=null)
                 {
           
                     
-                  SignIn(req,user);
-                   return Redirect("/Home/Index-Logged");
+                  SignIn(user.Id,username,user.Email);
+                   return Redirect("/Home/IndexLogged");
                 }
-                else
-                {
+         
 
-                    Console.WriteLine("False");
-                }
-
-            }
+            
             return Redirect("/Users/Login");
         }
-
-        public IHttpResponse Register(IHttpRequest req)
+        [HttpGet]
+        public ActionResult Register()
         {
             return View();
 
         }
-
-        public  IHttpResponse RegisterConfirm(IHttpRequest req)
+        [HttpPost(action:"Register")]
+        public ActionResult RegisterConfirm()
         {
-            var username = (string)req.FormData["username"][0];
-            var password = (string)req.FormData["password"][0];
-            var confirmPassword = (string)req.FormData["confirmPassword"][0];
-            var email = (string)req.FormData["email"][0];
+            var username = (string)Request.FormData["username"][0];
+            var password = (string)Request.FormData["password"][0];
+            var confirmPassword = (string)Request.FormData["confirmPassword"][0];
+            var email = (string)Request.FormData["email"][0];
             if (password==confirmPassword)
             {
-                using (var ctx= new AppDbContext())
+                var user = new UserViewModel
                 {
-                    ctx.Users.Add(new User{Email = email,Username = username,Password = MD5(password)});
-                    ctx.SaveChanges();
-                    req.Session.AddParameter("username",username);
-                    return Redirect("/Home/Index-Logged");
-                }
-                
+                    Username = username,
+                    Password = password,
+                    Email = email
+                };
+                var result = userService.CreateUser(user);//.GetAwaiter().GetResult();
+                Console.WriteLine(result.Id + " " + result.Username);
+                return Login();
             }
+            
+
             return View();
         }
-
-        private string MD5(string password)
+        
+        public ActionResult Logout()
         {
-            MD5 hasher = new MD5CryptoServiceProvider();
-            var bytes = Encoding.Unicode.GetBytes(password);
-             hasher.ComputeHash(bytes);
-             var hashedPassword = hasher.Hash;
-             var sb= new StringBuilder();
-             foreach (var b in bytes)
-             {
-                 sb.Append(b.ToString("x2"));
-             }
-
-             return sb.ToString().Trim();
+            SignOut();
+            return Redirect("/");
         }
+        
     }
 }

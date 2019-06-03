@@ -13,5 +13,6 @@ namespace SIS.HTTP.Common
         public const string SessionCookieKey = "SIS_ID";
         public const string ContentLength = "Content-Length";
         public const string ContentDisposition = "Content-Disposition";
+        public const string ContentType = "Content-Type";
     }
 }

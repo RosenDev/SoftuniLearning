@@ -1,9 +1,8 @@
-﻿using SIS.HTTP.Cookies.Interfaces;
+﻿using SIS.HTTP.Cookies;
 using SIS.HTTP.Enums;
 using SIS.HTTP.Headers;
-using SIS.HTTP.Headers.Interfaces;
 
-namespace SIS.HTTP.Responce.Interfaces
+namespace SIS.HTTP.Responce
 {
     public interface IHttpResponse
     {

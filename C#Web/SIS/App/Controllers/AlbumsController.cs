@@ -1,75 +1,88 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using App.Data;
+using App.Extensions;
 using App.Models;
-using SIS.HTTP.Extensions;
-using SIS.HTTP.Request.Interfaces;
-using SIS.HTTP.Responce.Interfaces;
+using SIS.WebServer;
+using SIS.WebServer.Attributes;
+using SIS.WebServer.Results;
 
 namespace App.Controllers
 {
-    public class AlbumsController:BaseController
+    public class AlbumsController : BaseController
     {
-        public IHttpResponse All(IHttpRequest request)
+        [HttpGet]
+ 
+        public ActionResult All()
         {
-            if (!IsLoggedIn(request))
-            {
-                return Redirect("/Users/Login");
-            }
-            using (var context= new AppDbContext())
+        
+            using (var context = new AppDbContext())
             {
                 ICollection<Album> albums = context.Albums.ToList();
-                if (albums.Count==0)
-                {
-                    ViewData["Albums"] = "There are currently no albums";
-                }
-                else
-                {
-                    ViewData["Albums"] = string.Join("<br/>",context.Albums
-                        .Select(album => album.ToHtmlAll())
-                        .ToList());
-                }
+             
+               
+                    
+                    return View(albums.ToList());
                 
-                return View();
+
+
             }
 
         }
+    
 
-        public IHttpResponse Details(IHttpRequest req)
+    [HttpGet]
+        public ActionResult Details()
         {
-            if (!IsLoggedIn(req))
+            if (!IsLoggedIn())
             {
                // return Redirect("/Users/Login");
             }
-            var id = (string)req.QueryData["id"][0];
+            var id = Guid.Parse((string)Request.QueryData["id"][0]);
             using (var context=new AppDbContext())
             {
                 var album = context.Albums.Find(id);
-                ViewData["Album"] = album.ToHtmlDetails();
-                return View();
+                return View(album);
             }
             
         }
-
-        public IHttpResponse Create(IHttpRequest req)
+        [HttpGet]
+        public ActionResult Create()
         {
-            if (!IsLoggedIn(req))
-            {
-                return Redirect("/Users/Login");
-            }
-            return null;
-
-        }
-
-        public IHttpResponse CreateConfirm(IHttpRequest req)
-        {
-            if (!IsLoggedIn(req))
+            if (!IsLoggedIn())
             {
                 return Redirect("/Users/Login");
             }
 
-            return null;
+            return View();
+
         }
+        [HttpPost(action:"Create")]
+        public ActionResult CreateConfirm()
+        {
+            if (!IsLoggedIn())
+            {
+                return Redirect("/Users/Login");
+            }
+           var album= new Album
+           {
+               Cover = (string)Request.FormData["cover"][0],
+               Name = (string)Request.FormData["name"][0],
+               Price =100M
+            
+           };
+           using (var context= new AppDbContext())
+           {
+               context.Albums.Add(album);
+               context.SaveChanges();
+           }
+
+           return Redirect($"/Albums/Details?id={album.Id}");
+        }
+
+        
+
     }
 }

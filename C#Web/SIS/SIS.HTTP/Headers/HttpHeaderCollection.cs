@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using SIS.HTTP.Common;
-using SIS.HTTP.Headers.Interfaces;
 
 namespace SIS.HTTP.Headers
 {

@@ -29,7 +29,7 @@ namespace SIS.WebServer
             Console.WriteLine($"Server is running on http://{LocalHostIp}:{port}");
             while (isRunning)
             {
-                Console.WriteLine($"Waiting for client...");
+                
                 var client = listener.AcceptSocket();
                 Task.Run(() => Listen(client));
             }

@@ -4,12 +4,9 @@ using System.Net.Http;
 using System.Text;
 using SIS.HTTP.Common;
 using SIS.HTTP.Cookies;
-using SIS.HTTP.Cookies.Interfaces;
 using SIS.HTTP.Enums;
 using SIS.HTTP.Extensions;
 using SIS.HTTP.Headers;
-using SIS.HTTP.Headers.Interfaces;
-using SIS.HTTP.Responce.Interfaces;
 
 namespace SIS.HTTP.Responce
 {

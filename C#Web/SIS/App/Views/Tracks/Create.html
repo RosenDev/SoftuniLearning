@@ -1,11 +1,4 @@
-﻿<!DOCTYPE html>
-
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta charset="utf-8" />
-    <title>IRunes</title>
-</head>
-<body>
+﻿
     <header>
         <nav>
             <a href="#">IRunes</a>
@@ -31,7 +24,7 @@
     <main>
         <h1>Create Track</h1>
         <hr style="height: 2px" />
-        <form action="/Tracks/Create?albumId={{{albumId}}}" method="POST">
+        <form action="/Tracks/Create?albumId=@Model.AlbumId" method="POST">
             <div>
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" placeholder="Name..." />
@@ -54,8 +47,4 @@
         </form>
     </main>
     <hr style="height: 2px" />
-    <footer>
-        <h5>CopyRight &copy; Sanity Design Studios. All rights reserved.</h5>
-    </footer>
-</body>
-</html>
+

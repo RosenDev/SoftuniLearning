@@ -4,14 +4,10 @@ using System.IO;
 using System.Linq;
 using SIS.HTTP.Common;
 using SIS.HTTP.Cookies;
-using SIS.HTTP.Cookies.Interfaces;
 using SIS.HTTP.Enums;
 using SIS.HTTP.Exceptions;
 using SIS.HTTP.Headers;
-using SIS.HTTP.Headers.Interfaces;
-using SIS.HTTP.Request.Interfaces;
 using SIS.HTTP.Sessions;
-using SIS.HTTP.Sessions.Interfaces;
 
 namespace SIS.HTTP.Request
 {
@@ -111,9 +107,10 @@ namespace SIS.HTTP.Request
         {
             if (Url.Contains("?"))
             {
-                var urlParts = Url.Split("?");
-                var hashtagIndex = Url.IndexOf("#");
-                var urlParams = string.Join("", urlParts[1].Take(hashtagIndex - (1 + urlParts[0].Length)).ToList());
+                var urlParts = Url.Split('?','#');
+              
+               
+                var urlParams = string.Join("", urlParts[1].ToList());
 
                 if (!IsValidRequestQueryString(urlParts[1],urlParts[1].Split("&")))
                 {
@@ -159,11 +156,7 @@ namespace SIS.HTTP.Request
 
         }
       
-        /// <summary>
-        /// Parses th formData
-        /// For multiple parameters it stores all of them in one string of the same parameter key
-        /// </summary>
-        /// <param name="formData"></param>
+        
         private void ParseRequestParameters(string formData)
         {
             ParseFormDataParameters(formData);
@@ -179,6 +172,7 @@ namespace SIS.HTTP.Request
             {
                 throw new BadRequestException();
             }
+            ParseRequestUrl(firstLine);
             ParseRequestMethod(firstLine);
            
             var newLineIndex = Array.LastIndexOf(requestContent, "");
@@ -202,7 +196,7 @@ namespace SIS.HTTP.Request
                     ParseRequestParameters(requestContent[newLineIndex + 1]);
                 }
             }
-            ParseRequestUrl(firstLine);
+           
             ParseRequestPath();
             ParseCookies();
 

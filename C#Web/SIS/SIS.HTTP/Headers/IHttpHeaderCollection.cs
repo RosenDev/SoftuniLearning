@@ -1,4 +1,4 @@
-﻿namespace SIS.HTTP.Headers.Interfaces
+﻿namespace SIS.HTTP.Headers
 {
     public interface IHttpHeaderCollection
     {

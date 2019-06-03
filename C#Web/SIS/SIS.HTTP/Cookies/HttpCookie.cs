@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Text;
 using SIS.HTTP.Common;
-using SIS.HTTP.Cookies.Interfaces;
-using SIS.HTTP.Responce.Interfaces;
 
 namespace SIS.HTTP.Cookies
 {
@@ -11,23 +9,22 @@ namespace SIS.HTTP.Cookies
         private const int DefaultHttpCookieExpirationDate = 3;
         private const string DefaultCookiePath = "/";
 
-        public HttpCookie(string key, string value,bool isNew, int expires = DefaultHttpCookieExpirationDate)
+        public HttpCookie(string key, string value, int expires = DefaultHttpCookieExpirationDate,
+            string path = DefaultCookiePath) : this(key, value, true, expires, path)
         {
-            CoreValidator.ThrowIfEmpty(key,nameof(key));
-            CoreValidator.ThrowIfEmpty(value,nameof(value));
-            Key = key;
-            Value = value;
-         
-            Expires=DateTime.UtcNow.AddDays(expires);
-
         }
 
-        public HttpCookie(string key, string value,
-            int expires=DefaultHttpCookieExpirationDate, 
+        public HttpCookie(string key, string value, bool isNew, int expires = DefaultHttpCookieExpirationDate,
             string path = DefaultCookiePath)
-        :this(key,value,true,expires)
+
         {
-            Path = path;
+            CoreValidator.ThrowIfEmpty(key, nameof(key));
+            CoreValidator.ThrowIfEmpty(value, nameof(value));
+
+            this.Key = key;
+            this.Value = value;
+            this.Expires = DateTime.UtcNow.AddDays(expires);
+            this.Path = path;
         }
 
         public string Key { get; set; }
