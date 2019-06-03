@@ -14,7 +14,7 @@ namespace App.Controllers
     public class AlbumsController : BaseController
     {
         [HttpGet]
- 
+ [Authorized]
         public ActionResult All()
         {
         
@@ -34,12 +34,10 @@ namespace App.Controllers
     
 
     [HttpGet]
+    [Authorized]
         public ActionResult Details()
         {
-            if (!IsLoggedIn())
-            {
-               // return Redirect("/Users/Login");
-            }
+           
             var id = Guid.Parse((string)Request.QueryData["id"][0]);
             using (var context=new AppDbContext())
             {
@@ -49,24 +47,17 @@ namespace App.Controllers
             
         }
         [HttpGet]
+        [Authorized]
         public ActionResult Create()
         {
-            if (!IsLoggedIn())
-            {
-                return Redirect("/Users/Login");
-            }
-
             return View();
 
         }
+        [Authorized]
         [HttpPost(action:"Create")]
         public ActionResult CreateConfirm()
         {
-            if (!IsLoggedIn())
-            {
-                return Redirect("/Users/Login");
-            }
-           var album= new Album
+            var album= new Album
            {
                Cover = (string)Request.FormData["cover"][0],
                Name = (string)Request.FormData["name"][0],

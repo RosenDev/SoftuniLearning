@@ -66,7 +66,7 @@ namespace SIS.WebServer
                         if (authorizeAttribute != null && !authorizeAttribute.IsInAuthority(controllerPrincipal))
                         {
                             // TODO: Redirect to configured URL
-                            return new ForbiddenResult("<h1>403<br/>Forbidden you don't have authority</h1>");
+                            return new RedirectResult($"/Users/Login?returnUrl={path}");//new ForbiddenResult("<h1>403<br/>Forbidden you don't have authority</h1>");
                         }
                         var response = action.Invoke(controllerInstance, new object[0] ) as ActionResult;
                         return response;
