@@ -10,7 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\App.Data\App.Data.csproj" />
     <ProjectReference Include="..\App.Models\App.Models.csproj" />
-    <ProjectReference Include="..\MvcApp\SIS.WebServer.csproj" />
+    <ProjectReference Include="..\SIS.WebServer\SIS.WebServer.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Models", "App.Models\Ap
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{210395C4-6F74-4DCD-8CD1-85C8BBD4DC2E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIS.WebServer", "MvcApp\SIS.WebServer.csproj", "{9F0C4B73-F1A1-43EB-A38E-8507C7910669}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SIS.WebServer", "SIS.WebServer\SIS.WebServer.csproj", "{9F0C4B73-F1A1-43EB-A38E-8507C7910669}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
