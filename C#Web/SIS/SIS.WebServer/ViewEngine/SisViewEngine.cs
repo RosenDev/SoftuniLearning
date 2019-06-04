@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
-using System.Net.Sockets;
-
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -54,8 +51,8 @@ namespace AppViewCodeNamespace
         }}
     }}
 }}";
-            IView view=null;
-            if (model is IEnumerable<Album>)
+            IView view;
+            if (model is IEnumerable)
             {
                 var assembly = model.GetType().GetGenericArguments()[0].Assembly;
                 view = this.CompileAndInstance(code,assembly);

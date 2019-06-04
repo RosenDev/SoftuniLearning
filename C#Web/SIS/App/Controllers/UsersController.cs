@@ -14,7 +14,7 @@ using SIS.WebServer.Results;
 namespace App.Controllers
 {
     public class UsersController:BaseController
-    {//GET
+    {
         private readonly IUserService userService= new UserService();
         [HttpGet]
         public ActionResult Login()
@@ -22,12 +22,11 @@ namespace App.Controllers
 
             return View();
         }
-        //post
+        
         [HttpPost(action:"Login")]
-        public ActionResult LoginConfirm()
+        public ActionResult LoginConfirm(string username, string password)
         {
-            var username = (string)Request.FormData["username"][0];
-            var password = (string)Request.FormData["password"][0];
+           
             var user = userService.GetUser(username, password);
                 if (user!=null)
                 {

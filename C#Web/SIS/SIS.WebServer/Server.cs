@@ -13,9 +13,10 @@ namespace SIS.WebServer
         private readonly TcpListener listener;
         private readonly IServerRoutingTable routingTable;
         private bool isRunning;
-
+        private readonly IHttpSessionStorage sessionStorage;
         public Server(int port,  IServerRoutingTable routingTable)
         {
+            this.sessionStorage = new HttpSessionStorage();
             this.port = port;
        listener=new TcpListener(IPAddress.Parse(LocalHostIp),port);
             this.routingTable = routingTable;
@@ -37,7 +38,7 @@ namespace SIS.WebServer
 
         public async Task Listen(Socket client)
         {
-            var connHandler= new ConnectionHandler(client,routingTable);
+            var connHandler= new ConnectionHandler(client,routingTable,sessionStorage);
            await connHandler.ProcessRequestAsync();
         }
     }

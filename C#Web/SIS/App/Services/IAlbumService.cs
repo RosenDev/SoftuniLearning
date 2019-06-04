@@ -1,10 +1,14 @@
-﻿using App.ViewModels;
+﻿using System;
+using App.Models;
+using App.ViewModels;
+using App.ViewModels.AlbumViewModels;
 
 namespace App.Services
 {
     public interface IAlbumService
     {
-        AlbumViewModel CreateAlbum(AlbumViewModel album);
-        AlbumViewModel GetAlbum(AlbumViewModel album);
+        AlbumCreateViewModel CreateAlbum(AlbumCreateViewModel album);
+        AlbumDetailsViewModel GetAlbum(Guid id);
+        bool AddTrackToAlbum(Guid albumId, Track trackForDb);
     }
 }

@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SIS.HTTP.Enums;
+using SIS.HTTP.Request;
 using SIS.HTTP.Responce;
 using SIS.WebServer.Attributes;
 using SIS.WebServer.Results;
 using SIS.WebServer.Routing;
+using IServiceProvider=SIS.WebServer.DependecyContainer.IServiceProvider;
 
 namespace SIS.WebServer
 {
@@ -15,14 +18,14 @@ namespace SIS.WebServer
         {
             IServerRoutingTable table = new ServerRoutingTable();  
             app.Configure(table);
-            app.ConfigureServices();
-            AutoRegisterRoutes(app,table);
+           var provider= app.ConfigureServices();
+            AutoRegisterRoutes(app,table, provider);
             var server = new Server(8000, table);
             server.Start();
 
         }
 
-        private static void AutoRegisterRoutes(IMvcApplication app,IServerRoutingTable table)
+        private static void AutoRegisterRoutes(IMvcApplication app,IServerRoutingTable table,IServiceProvider provider)
         {
             app.GetType().Assembly.GetTypes()
                 .Where(x => x.IsClass && !x.IsAbstract 
@@ -54,23 +57,9 @@ namespace SIS.WebServer
                     {
                         path= $"/{controller.Name.Replace("Controller", string.Empty)}/{attribute.Action}";
                     }
-
-                    table.Add(httpMethod,path, req =>
-                    {
-                        var controllerInstance = Activator.CreateInstance(controller);
-                        ((BaseController) controllerInstance).Request = req;
-                        var controllerPrincipal = ((BaseController) controllerInstance).User;
-                        var authorizeAttribute = action.GetCustomAttributes()
-                            .LastOrDefault(a => a.GetType() == typeof(AuthorizedAttribute)) as AuthorizedAttribute;
-
-                        if (authorizeAttribute != null && !authorizeAttribute.IsInAuthority(controllerPrincipal))
-                        {
-                            // TODO: Redirect to configured URL
-                            return new RedirectResult($"/Users/Login?returnUrl={path}");//new ForbiddenResult("<h1>403<br/>Forbidden you don't have authority</h1>");
-                        }
-                        var response = action.Invoke(controllerInstance, new object[0] ) as ActionResult;
-                        return response;
-                    });
+                    table.Add(httpMethod,path,req=>
+                        ProcessRequest(provider, controller, action,req));
+              
 
                     }
 
@@ -78,5 +67,84 @@ namespace SIS.WebServer
                 });
 
         }
+        private static IHttpResponse ProcessRequest(
+            IServiceProvider serviceProvider,
+            System.Type controllerType,
+            MethodInfo action,
+            IHttpRequest request)
+        {
+            var controllerInstance = serviceProvider.CreateInstance(controllerType) as BaseController;
+            controllerInstance.Request = request;
+
+            // Security Authorization - TODO: Refactor this
+            var controllerPrincipal = controllerInstance.User;
+            var authorizeAttribute = action.GetCustomAttributes()
+                .LastOrDefault(a => a.GetType() == typeof(AuthorizedAttribute)) as AuthorizedAttribute;
+            if (authorizeAttribute != null && !authorizeAttribute.IsInAuthority(controllerPrincipal))
+            {
+                //
+                return new RedirectResult($"/Users/Login?returnUrl={request.Path}");
+            }
+
+            var parameters = action.GetParameters();
+            var parameterValues = new List<object>();
+
+            foreach (var parameter in parameters)
+            {
+                List<object> httpDataValue = TryGetHttpParameter(request, parameter.Name);
+                /* TODO: if (parameter.ParameterType.GetInterfaces().Any(
+                    i => i.IsGenericType &&
+                    i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+                {
+                    var collection = httpDataValue.Select(x => System.Convert.ChangeType(x,
+                        parameter.ParameterType.GenericTypeArguments.First()));
+                    parameterValues.Add(collection);
+                    continue;
+                } */
+
+                try
+                {
+                    string httpStringValue = (string)httpDataValue.FirstOrDefault();
+                    var parameterValue = Convert.ChangeType(httpStringValue, parameter.ParameterType);
+                    parameterValues.Add(parameterValue);
+                }
+                catch
+                {
+                    var paramaterValue = System.Activator.CreateInstance(parameter.ParameterType);
+                    var properties = parameter.ParameterType.GetProperties();
+                    foreach (var property in properties)
+                    {
+                        List<object> propertyHttpDataValue = TryGetHttpParameter(request, property.Name);
+                        var firstValue = propertyHttpDataValue.FirstOrDefault();
+                        var propertyValue = System.Convert.ChangeType(firstValue, property.PropertyType);
+                        property.SetMethod.Invoke(paramaterValue, new object[] { propertyValue });
+                    }
+
+                    parameterValues.Add(paramaterValue);
+                }
+            }
+
+            var response = action.Invoke(controllerInstance, parameterValues.ToArray()) as ActionResult;
+            return response;
+        }
+
+        private static List<object> TryGetHttpParameter(IHttpRequest request, string parameterName)
+        {
+            parameterName = parameterName.ToLower();
+            List<object> httpDataValue = null;
+            if (request.QueryData.Any(x => x.Key.ToLower() == parameterName))
+            {
+                httpDataValue = request.QueryData.FirstOrDefault(
+                    x => x.Key.ToLower() == parameterName).Value;
+            }
+            else if (request.FormData.Any(x => x.Key.ToLower() == parameterName))
+            {
+                httpDataValue = request.FormData.FirstOrDefault(
+                    x => x.Key.ToLower() == parameterName).Value;
+            }
+
+            return httpDataValue;
+        }
     }
 }
+    

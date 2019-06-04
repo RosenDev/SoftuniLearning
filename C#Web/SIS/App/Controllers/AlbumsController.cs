@@ -5,6 +5,9 @@ using System.Linq;
 using App.Data;
 using App.Extensions;
 using App.Models;
+using App.Services;
+using App.ViewModels;
+using App.ViewModels.AlbumViewModels;
 using SIS.WebServer;
 using SIS.WebServer.Attributes;
 using SIS.WebServer.Results;
@@ -13,8 +16,13 @@ namespace App.Controllers
 {
     public class AlbumsController : BaseController
     {
+        private readonly IAlbumService albumService;
+        public AlbumsController()
+        {
+            albumService=new AlbumService();
+        }
         [HttpGet]
- [Authorized]
+        [Authorized]
         public ActionResult All()
         {
         
@@ -39,12 +47,9 @@ namespace App.Controllers
         {
            
             var id = Guid.Parse((string)Request.QueryData["id"][0]);
-            using (var context=new AppDbContext())
-            {
-                var album = context.Albums.Find(id);
-                return View(album);
-            }
-            
+            var album = albumService.GetAlbum(id);
+            return View(album);
+
         }
         [HttpGet]
         [Authorized]
@@ -57,18 +62,13 @@ namespace App.Controllers
         [HttpPost(action:"Create")]
         public ActionResult CreateConfirm()
         {
-            var album= new Album
+            var albumModel= new AlbumCreateViewModel
            {
                Cover = (string)Request.FormData["cover"][0],
                Name = (string)Request.FormData["name"][0],
-               Price =100M
-            
+
            };
-           using (var context= new AppDbContext())
-           {
-               context.Albums.Add(album);
-               context.SaveChanges();
-           }
+            var album = albumService.CreateAlbum(albumModel);
 
            return Redirect($"/Albums/Details?id={album.Id}");
         }

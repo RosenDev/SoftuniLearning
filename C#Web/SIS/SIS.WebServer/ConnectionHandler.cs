@@ -21,15 +21,15 @@ namespace SIS.WebServer
     {
         private readonly Socket client;
         private readonly IServerRoutingTable routingTable;
-        
+        private readonly IHttpSessionStorage sessionStorage;
 
-        public ConnectionHandler(Socket client, IServerRoutingTable routingTable)
+        public ConnectionHandler(Socket client, IServerRoutingTable routingTable,IHttpSessionStorage sessionStorage)
         {
             CoreValidator.ThrowIfNull(client,nameof(client));
             CoreValidator.ThrowIfNull(routingTable,nameof(routingTable));
             this.client = client;
             this.routingTable = routingTable;
-           
+            this.sessionStorage = sessionStorage;
         }
 
         private string SetRequestSession(IHttpRequest request)
@@ -42,9 +42,9 @@ namespace SIS.WebServer
 
                 string sessionId = cookie.Value;
 
-                if (HttpSessionStorage.ContainsSession(sessionId))
+                if (sessionStorage.ContainsSession(sessionId))
                 {
-                    request.Session = HttpSessionStorage.GetSession(sessionId);
+                    request.Session = sessionStorage.GetSession(sessionId);
                 }
             }
 
@@ -52,7 +52,7 @@ namespace SIS.WebServer
             {
                 string sessionId = Guid.NewGuid().ToString();
 
-                request.Session = HttpSessionStorage.GetSession(sessionId);
+                request.Session = sessionStorage.GetSession(sessionId);
             }
 
             return request.Session?.Id;
@@ -60,7 +60,7 @@ namespace SIS.WebServer
 
         private void SetResponseSession(IHttpResponse response,string sessionId)
         {
-            IHttpSession responseSession = HttpSessionStorage.GetSession(sessionId);
+            IHttpSession responseSession =sessionStorage.GetSession(sessionId);
 
             if (responseSession.IsNew)
             {
