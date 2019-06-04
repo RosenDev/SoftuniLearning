@@ -14,6 +14,10 @@ namespace App.Controllers
 {
     public class HomeController:BaseController
     {
+        public HomeController()
+        {
+            
+        }
         [HttpGet(path:"/")]
 
         public ActionResult Index()

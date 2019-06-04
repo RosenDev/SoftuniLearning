@@ -9,7 +9,8 @@ namespace SIS.WebServer.DependecyContainer
 
         object CreateInstance(Type type);
 
-        T CreateInstance<T>();
+        T CreateInstance<T>()
+            where T : class, new();
 
     }
 }

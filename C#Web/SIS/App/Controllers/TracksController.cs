@@ -15,32 +15,24 @@ namespace App.Controllers
 {
     public class TracksController : BaseController
     {
+        private readonly ITrackService trackService;
         private readonly IAlbumService albumService;
-        public TracksController()
+        public TracksController(ITrackService trackService,IAlbumService albumService)
         {
-            albumService = new AlbumService();
+            this.trackService=trackService;
+            this.albumService = albumService;
         }
         [Authorized]
-        public ActionResult Details()
+        public ActionResult Details(string albumId, string trackId)
         {
-          
+            var track = trackService.GetTrack(Guid.Parse(trackId));
 
-           var albumId = (string)Request.QueryData["albumId"][0];
-            var trackId = Guid.Parse((string)Request.QueryData["trackId"][0]);
-
-            using (var context = new AppDbContext())
-            {
-                Track trackFromDb = context.Tracks.SingleOrDefault(track => track.Id == trackId);
-
-                if (trackFromDb == null)
+                if (track == null)
                 {
                     return this.Redirect($"/Albums/Details?id={albumId}");
                 }
 
-                this.ViewData["AlbumId"] = albumId;
-                this.ViewData["Track"] = trackFromDb.ToHtmlDetails(albumId);
-                return this.View();
-            }
+                return this.View(track);
         }
         [Authorized]
         public ActionResult Create()
@@ -54,7 +46,7 @@ namespace App.Controllers
             
             [HttpPost(action:"Create")]
             [Authorized]
-            public ActionResult CreateConfirm()
+            public ActionResult CreateConfirm(string name, string link, decimal price)
             {
 
                 var albumId = Guid.Parse((string)Request.QueryData["albumId"][0]);
@@ -67,15 +59,11 @@ namespace App.Controllers
                         return this.Redirect("/Albums/All");
                     }
 
-                    string name = (string) Request.FormData["name"][0];
-                    string link = (string) Request.FormData["link"][0];
-                    string price = (string) Request.FormData["price"][0];
-            //todo
-                    Track trackForDb = new Track
+                    var trackForDb = new TrackCreateViewModel
                     {
                         Name = name,
                         Link = link,
-                        Price = decimal.Parse(price)
+                        Price = price
                     };
                     albumService.AddTrackToAlbum(albumId, trackForDb);
                 

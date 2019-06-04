@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Web;
 using SIS.HTTP.Common;
 using SIS.HTTP.Cookies;
 using SIS.HTTP.Enums;
@@ -79,7 +80,7 @@ namespace SIS.HTTP.Request
 
         private void ParseRequestUrl(string[] requestLine)
         {
-            Url = requestLine[1];
+            this.Url = HttpUtility.UrlDecode(requestLine[1]);
         }
 
         private void ParseRequestPath()

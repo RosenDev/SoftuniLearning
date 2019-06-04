@@ -13,7 +13,7 @@ namespace App.ViewModels.AlbumViewModels
         public string Cover { get; set; }
 
         public decimal Price { get; set; }
-        public List<TrackDetailsViewModel> Tracks { get; set; }=new List<TrackDetailsViewModel>();
+        public List<TrackAllViewModel> Tracks { get; set; }=new List<TrackAllViewModel>();
 
     }
 }

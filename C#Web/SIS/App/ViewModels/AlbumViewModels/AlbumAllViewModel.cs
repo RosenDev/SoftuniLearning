@@ -1,8 +1,9 @@
-﻿namespace App.ViewModels.TrackViewModels
+﻿namespace App.ViewModels.AlbumViewModels
 {
-    public class TrackAllViewModel
+    public class AlbumAllViewModel
     {
         public string Id { get; set; }
+
         public string Name { get; set; }
     }
 }

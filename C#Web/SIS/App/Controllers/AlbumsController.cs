@@ -17,37 +17,26 @@ namespace App.Controllers
     public class AlbumsController : BaseController
     {
         private readonly IAlbumService albumService;
-        public AlbumsController()
+        public AlbumsController(IAlbumService albumService)
         {
-            albumService=new AlbumService();
+            this.albumService = albumService;
         }
         [HttpGet]
         [Authorized]
         public ActionResult All()
         {
-        
-            using (var context = new AppDbContext())
-            {
-                ICollection<Album> albums = context.Albums.ToList();
-             
-               
-                    
-                    return View(albums.ToList());
-                
-
-
-            }
-
+            var all = albumService.GetAll();
+                return View(all.ToList());
         }
     
 
     [HttpGet]
     [Authorized]
-        public ActionResult Details()
+        public ActionResult Details(string id)
         {
-           
-            var id = Guid.Parse((string)Request.QueryData["id"][0]);
-            var album = albumService.GetAlbum(id);
+
+            var albumId = Guid.Parse(id);
+            var album = albumService.GetAlbum(albumId);
             return View(album);
 
         }
@@ -60,12 +49,12 @@ namespace App.Controllers
         }
         [Authorized]
         [HttpPost(action:"Create")]
-        public ActionResult CreateConfirm()
+        public ActionResult CreateConfirm(string cover, string name)
         {
             var albumModel= new AlbumCreateViewModel
            {
-               Cover = (string)Request.FormData["cover"][0],
-               Name = (string)Request.FormData["name"][0],
+               Cover = cover,
+               Name = name
 
            };
             var album = albumService.CreateAlbum(albumModel);

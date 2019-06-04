@@ -6,6 +6,7 @@ using SIS.HTTP.Enums;
 using SIS.HTTP.Request;
 using SIS.HTTP.Responce;
 using SIS.WebServer.Attributes;
+using SIS.WebServer.Attributes.Action;
 using SIS.WebServer.Results;
 using SIS.WebServer.Routing;
 using IServiceProvider=SIS.WebServer.DependecyContainer.IServiceProvider;
@@ -14,13 +15,14 @@ namespace SIS.WebServer
 {
     public  static class WebHost
     {
-        public static void Start(IMvcApplication app)
+        public static void Start(IMvcApplication mvcApplication)
         {
-            IServerRoutingTable table = new ServerRoutingTable();  
-            app.Configure(table);
-           var provider= app.ConfigureServices();
-            AutoRegisterRoutes(app,table, provider);
-            var server = new Server(8000, table);
+            IServerRoutingTable routingTable = new ServerRoutingTable();
+            var httpSessionStorage = new HttpSessionStorage();
+            mvcApplication.Configure(routingTable);
+           var serviceProvider= mvcApplication.ConfigureServices();
+            AutoRegisterRoutes(mvcApplication,routingTable, serviceProvider);
+            var server = new Server(8000, routingTable,httpSessionStorage);
             server.Start();
 
         }
@@ -36,7 +38,8 @@ namespace SIS.WebServer
                         .GetMethods(BindingFlags.Public 
                                     | BindingFlags.Instance
                                     |BindingFlags.DeclaredOnly)
-                        .Where(method => !method.IsStatic&&!method.IsVirtual);
+                        .Where(x => !x.IsSpecialName && x.DeclaringType == controller)
+                        .Where(x => x.GetCustomAttributes().All(a => a.GetType() != typeof(NonActionAttribute)));
                     foreach (var action in actions)
                     {
                         var path = $"/{controller.Name.Replace("Controller", string.Empty)}/{action.Name}";
@@ -69,7 +72,7 @@ namespace SIS.WebServer
         }
         private static IHttpResponse ProcessRequest(
             IServiceProvider serviceProvider,
-            System.Type controllerType,
+            Type controllerType,
             MethodInfo action,
             IHttpRequest request)
         {
@@ -83,7 +86,7 @@ namespace SIS.WebServer
             if (authorizeAttribute != null && !authorizeAttribute.IsInAuthority(controllerPrincipal))
             {
                 //
-                return new RedirectResult($"/Users/Login?returnUrl={request.Path}");
+                return new RedirectResult($"/Users/Login?returnUrl={request.Url}");
             }
 
             var parameters = action.GetParameters();
@@ -110,13 +113,13 @@ namespace SIS.WebServer
                 }
                 catch
                 {
-                    var paramaterValue = System.Activator.CreateInstance(parameter.ParameterType);
+                    var paramaterValue = Activator.CreateInstance(parameter.ParameterType);
                     var properties = parameter.ParameterType.GetProperties();
                     foreach (var property in properties)
                     {
                         List<object> propertyHttpDataValue = TryGetHttpParameter(request, property.Name);
                         var firstValue = propertyHttpDataValue.FirstOrDefault();
-                        var propertyValue = System.Convert.ChangeType(firstValue, property.PropertyType);
+                        var propertyValue = Convert.ChangeType(firstValue, property.PropertyType);
                         property.SetMethod.Invoke(paramaterValue, new object[] { propertyValue });
                     }
 

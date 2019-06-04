@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SIS.WebServer.DependecyContainer
 {
@@ -47,8 +48,32 @@ namespace SIS.WebServer.DependecyContainer
         }
 
         public T CreateInstance<T>()
+        where T:class,new()
         {
-            throw new NotImplementedException();
+            var type = typeof(T);
+            if (dependencyContainer.ContainsKey(type))
+            {
+                type = dependencyContainer[type];
+            }
+
+            var constructor = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance)
+                .OrderBy(x => x.GetParameters().Count()).FirstOrDefault();
+
+            if (constructor == null)
+            {
+                return null;
+            }
+
+            var parameters = constructor.GetParameters();
+            var parameterInstances = new List<object>();
+            foreach (var parameter in parameters)
+            {
+                var parameterInstance = CreateInstance(parameter.ParameterType);
+                parameterInstances.Add(parameterInstance);
+            }
+
+            var obj = constructor.Invoke(parameterInstances.ToArray());
+            return (T)obj;
         }
     }
 }

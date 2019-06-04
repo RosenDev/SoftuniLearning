@@ -9,13 +9,20 @@ using App.Services;
 using App.ViewModels;
 using SIS.WebServer;
 using SIS.WebServer.Attributes;
+using SIS.WebServer.Extensions;
 using SIS.WebServer.Results;
+using  IServiceProvider=SIS.WebServer.DependecyContainer.IServiceProvider;
 
 namespace App.Controllers
 {
     public class UsersController:BaseController
     {
-        private readonly IUserService userService= new UserService();
+        private readonly IUserService userService;
+
+        public UsersController(IUserService service)
+        {
+            userService = service;
+        }
         [HttpGet]
         public ActionResult Login()
         {
@@ -30,29 +37,28 @@ namespace App.Controllers
             var user = userService.GetUser(username, password);
                 if (user!=null)
                 {
-          
-                    
-                  SignIn(user.Id,username,user.Email);
+                    SignIn(user.Id,username,user.Email);
+                    if (Request.QueryData.ContainsKey("returnUrl"))
+                    {
+                        return Redirect((string)Request.QueryData["returnUrl"][0]);
+                    }
                    return Redirect("/Home/IndexLogged");
                 }
-         
 
-            
-            return Redirect("/Users/Login");
+                return Redirect("/Users/Login");
         }
+
         [HttpGet]
         public ActionResult Register()
         {
             return View();
 
         }
+
         [HttpPost(action:"Register")]
-        public ActionResult RegisterConfirm()
+        public ActionResult RegisterConfirm(string username, string password
+            , string confirmPassword,string email)
         {
-            var username = (string)Request.FormData["username"][0];
-            var password = (string)Request.FormData["password"][0];
-            var confirmPassword = (string)Request.FormData["confirmPassword"][0];
-            var email = (string)Request.FormData["email"][0];
             if (password==confirmPassword)
             {
                 var user = new UserViewModel
@@ -61,7 +67,7 @@ namespace App.Controllers
                     Password = password,
                     Email = email
                 };
-                var result = userService.CreateUser(user);//.GetAwaiter().GetResult();
+                var result = userService.CreateUser(user);
                 Console.WriteLine(result.Id + " " + result.Username);
                 return Login();
             }
@@ -73,7 +79,7 @@ namespace App.Controllers
         public ActionResult Logout()
         {
             SignOut();
-            return Redirect("/");
+            return Redirect($"/Users/Login");
         }
         
     }

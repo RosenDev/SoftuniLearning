@@ -14,9 +14,9 @@ namespace SIS.WebServer
         private readonly IServerRoutingTable routingTable;
         private bool isRunning;
         private readonly IHttpSessionStorage sessionStorage;
-        public Server(int port,  IServerRoutingTable routingTable)
+        public Server(int port,  IServerRoutingTable routingTable,IHttpSessionStorage storage)
         {
-            this.sessionStorage = new HttpSessionStorage();
+            this.sessionStorage = storage;
             this.port = port;
        listener=new TcpListener(IPAddress.Parse(LocalHostIp),port);
             this.routingTable = routingTable;
