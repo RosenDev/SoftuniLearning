@@ -52,6 +52,7 @@ namespace AppViewCodeNamespace
         }}
     }}
 }}";
+    
             var view = this.CompileAndInstance(code, model?.GetType().Assembly);
             var htmlResult = view?.GetHtml(model, user);
             return htmlResult;

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using App.Data;
 using App.Models;
 using App.ViewModels;
+using SIS.MvcFramework.Mapping;
 
 namespace App.Services
 {
@@ -24,16 +25,7 @@ namespace App.Services
                 };
                 ctx.Users.Add(userForDb);
                  ctx.SaveChanges();
-                return new UserViewModel
-                {
-                    Username = userForDb.Username,
-                    Password = userForDb.Password,
-                    Email = userForDb.Email,
-                    Id = userForDb.Id.ToString()
-
-                };
-
-
+                 return userForDb.To<UserViewModel>();
             }
         }
         public async Task<UserViewModel> CreateUserAsync(UserViewModel user)
@@ -69,7 +61,7 @@ namespace App.Services
             {
                 password = MD5(password);
                 var user = context.Users.FirstOrDefault(x => x.Username == username && x.Password == password);
-                return new UserViewModel {Id = user.Id.ToString(),Username = user.Username,Password = user.Password,Email = user.Email};
+                return user.To<UserViewModel>();
             }
         }
         private string MD5(string password)

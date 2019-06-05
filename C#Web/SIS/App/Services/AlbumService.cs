@@ -2,12 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using App.Data;
 using App.Models;
 using App.ViewModels;
 using App.ViewModels.AlbumViewModels;
 using App.ViewModels.TrackViewModels;
 using Microsoft.EntityFrameworkCore;
+using SIS.MvcFramework.Mapping;
 
 namespace App.Services
 {
@@ -15,18 +17,11 @@ namespace App.Services
     {
         public ICollection<AlbumAllViewModel> GetAll()
         {
-            var viewModels = new List<AlbumAllViewModel>();
+            
             using (var context = new AppDbContext())
             {
-                context.Albums.ToList()
-                    .ForEach(x =>
-                    {
-                        viewModels.Add(new AlbumAllViewModel
-                        {
-                            Id = x.Id.ToString(),
-                            Name = x.Name
-                        });
-                    });
+                var viewModels =
+                    context.Albums.To<AlbumAllViewModel>().ToList();
                 return viewModels;
             }
         }
@@ -37,8 +32,8 @@ namespace App.Services
             {
                 var album = new Album
                 {
-                    Cover = albumModel.Cover,
-                    Name = albumModel.Name,
+                    Cover = WebUtility.UrlDecode(albumModel.Cover),
+                    Name = WebUtility.UrlDecode(albumModel.Name),
                     Price = 0.0m
                 };
                 context.Albums.Add(album);
@@ -55,20 +50,8 @@ namespace App.Services
             using (var context = new AppDbContext())
             {
                 var album = context.Albums.Include(x => x.Tracks)
-                    .SingleOrDefault(x => x.Id == id);
-                return new AlbumDetailsViewModel
-               {
-                   Id = album.Id.ToString(),
-                   Cover = album.Cover,
-                   Name = album.Name,
-                   Price = album.Tracks.Sum(x=>x.Price),
-                   Tracks = album.Tracks.Select(x=>new TrackAllViewModel
-                   {
-                       Id = x.Id.ToString(),
-                       Name=x.Name
-
-                   }).ToList()
-               };
+                    .SingleOrDefault(x => x.Id == id).To<AlbumDetailsViewModel>();
+                return album;
             }
         }
         public bool AddTrackToAlbum(Guid albumId, TrackCreateViewModel trackForDb)
@@ -86,7 +69,7 @@ namespace App.Services
                 var track = new  Track
                 {
                     AlbumId = albumId,
-                    Link = trackForDb.Link,
+                    Link = WebUtility.UrlDecode(trackForDb.Link),
                     Name = trackForDb.Name,
                     Price = trackForDb.Price
                 };
