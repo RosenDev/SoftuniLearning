@@ -13,7 +13,9 @@ using SIS.WebServer.Identity;
 
 namespace SIS.WebServer.ViewEngine
 {
-    public class SisViewEngine:IViewEngine {
+    public class SisViewEngine : IViewEngine
+    {
+        public object WebUtilitycode { get; private set; }
         private string GetModelType<T>(T model)
         {
             if (model is IEnumerable)
@@ -26,7 +28,6 @@ namespace SIS.WebServer.ViewEngine
 
         public string GetHtml<T>(string viewContent, T model, Principal user = null)
         {
-            
             string csharpHtmlCode = this.GetCSharpCode(viewContent);
             string code = $@"
 using System;
@@ -51,17 +52,7 @@ namespace AppViewCodeNamespace
         }}
     }}
 }}";
-            IView view;
-            if (model is IEnumerable)
-            {
-                var assembly = model.GetType().GetGenericArguments()[0].Assembly;
-                view = this.CompileAndInstance(code,assembly);
-            }
-            else
-            {
-                view = this.CompileAndInstance(code, model?.GetType().Assembly);
-            }
-            
+            var view = this.CompileAndInstance(code, model?.GetType().Assembly);
             var htmlResult = view?.GetHtml(model, user);
             return htmlResult;
         }
@@ -69,46 +60,70 @@ namespace AppViewCodeNamespace
         private string GetCSharpCode(string viewContent)
         {
             // TODO: { var a = "Niki"; }
-            var lines = viewContent.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            var lines = viewContent.Split(new string[] {"\r\n", "\n\r", "\n"}, StringSplitOptions.None);
             var csharpCode = new StringBuilder();
-            var supportedOperators = new[] { "for", "if", "else" };
-            var csharpCodeRegex = new Regex(@"[^\s<""]+", RegexOptions.Compiled);
+            var supportedOperators = new[] {"for", "if", "else"};
+            var csharpCodeRegex = new Regex(@"[^\s<""\&]+", RegexOptions.Compiled);
+            var csharpCodeDepth = 0; // If > 0, Inside CSharp Syntax
+
             foreach (var line in lines)
             {
-                if (line.TrimStart().StartsWith("{") || line.TrimStart().StartsWith("}"))
+                string currentLine = line;
+
+                if (currentLine.TrimStart().StartsWith("@{"))
+                {
+                    csharpCodeDepth++;
+                }
+                else if (currentLine.TrimStart().StartsWith("{") || currentLine.TrimStart().StartsWith("}"))
                 {
                     // { / }
-                    csharpCode.AppendLine(line);
+                    if (csharpCodeDepth > 0)
+                    {
+                        if (currentLine.TrimStart().StartsWith("{"))
+                        {
+                            csharpCodeDepth++;
+                        }
+                        else if (currentLine.TrimStart().StartsWith("}"))
+                        {
+                            if ((--csharpCodeDepth) == 0)
+                            {
+                                continue;
+                            }
+                        }
+                    }
+
+                    csharpCode.AppendLine(currentLine);
                 }
-                else if (supportedOperators.Any(x => line.TrimStart().StartsWith("@" + x)))
+                else if (csharpCodeDepth > 0)
+                {
+                    csharpCode.AppendLine(currentLine);
+                    continue;
+                }
+                else if (supportedOperators.Any(x => currentLine.TrimStart().StartsWith("@" + x)))
                 {
                     // @C#
-                    var atSignLocation = line.IndexOf("@");
-                    var csharpLine = line.Remove(atSignLocation, 1);
+                    var atSignLocation = currentLine.IndexOf("@");
+                    var csharpLine = currentLine.Remove(atSignLocation, 1);
                     csharpCode.AppendLine(csharpLine);
                 }
                 else
                 {
                     // HTML
-                    if (!line.Contains("@"))
+                    if (currentLine.Contains("@RenderBody()"))
                     {
-                        var csharpLine = $"html.AppendLine(@\"{line.Replace("\"", "\"\"")}\");";
-                        csharpCode.AppendLine(csharpLine);
-                    }
-                    else if (line.Contains("@RenderBody()"))
-                    {
-                        var csharpLine = $"html.AppendLine(@\"{line}\");";
+                        var csharpLine = $"html.AppendLine(@\"{currentLine}\");";
                         csharpCode.AppendLine(csharpLine);
                     }
                     else
                     {
                         var csharpStringToAppend = "html.AppendLine(@\"";
-                        var restOfLine = line;
+                        var restOfLine = currentLine;
                         while (restOfLine.Contains("@"))
                         {
                             var atSignLocation = restOfLine.IndexOf("@");
                             var plainText = restOfLine.Substring(0, atSignLocation).Replace("\"", "\"\"");
-                            var csharpExpression = csharpCodeRegex.Match(restOfLine.Substring(atSignLocation + 1))?.Value;
+                            var csharpExpression =
+                                csharpCodeRegex.Match(restOfLine.Substring(atSignLocation + 1))?.Value;
 
                             if (csharpExpression.Contains("{") && csharpExpression.Contains("}"))
                             {
@@ -153,6 +168,7 @@ namespace AppViewCodeNamespace
                 .AddReferences(MetadataReference.CreateFromFile(typeof(Object).Assembly.Location))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(IView).Assembly.Location))
                 .AddReferences(MetadataReference.CreateFromFile(Assembly.GetEntryAssembly().Location))
+                .AddReferences(MetadataReference.CreateFromFile(Assembly.Load(new AssemblyName("netstandard")).Location))
                 .AddReferences(MetadataReference.CreateFromFile(modelAssembly.Location));
 
             var netStandardAssembly = Assembly.Load(new AssemblyName("netstandard")).GetReferencedAssemblies();

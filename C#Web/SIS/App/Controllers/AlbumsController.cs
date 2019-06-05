@@ -34,7 +34,6 @@ namespace App.Controllers
     [Authorized]
         public ActionResult Details(string id)
         {
-
             var albumId = Guid.Parse(id);
             var album = albumService.GetAlbum(albumId);
             return View(album);

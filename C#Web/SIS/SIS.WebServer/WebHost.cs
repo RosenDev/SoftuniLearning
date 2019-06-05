@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -95,15 +96,19 @@ namespace SIS.WebServer
             foreach (var parameter in parameters)
             {
                 List<object> httpDataValue = TryGetHttpParameter(request, parameter.Name);
-                /* TODO: if (parameter.ParameterType.GetInterfaces().Any(
+                if (parameter.ParameterType.GetInterfaces().Any(
                     i => i.IsGenericType &&
-                    i.GetGenericTypeDefinition() == typeof(IEnumerable<>)))
+                    i.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                    &&parameter.ParameterType!=typeof(string)))
                 {
-                    var collection = httpDataValue.Select(x => System.Convert.ChangeType(x,
-                        parameter.ParameterType.GenericTypeArguments.First()));
-                    parameterValues.Add(collection);
+                    var parameterValue = (IList)Activator.CreateInstance(parameter.ParameterType);
+                    foreach (var obj in httpDataValue)
+                    {
+                        parameterValue.Add(Convert.ChangeType(obj,parameter.ParameterType.GenericTypeArguments[0]));
+                    }
+                        parameterValues.Add(parameterValue);
                     continue;
-                } */
+                } 
 
                 try
                 {
@@ -118,9 +123,25 @@ namespace SIS.WebServer
                     foreach (var property in properties)
                     {
                         List<object> propertyHttpDataValue = TryGetHttpParameter(request, property.Name);
-                        var firstValue = propertyHttpDataValue.FirstOrDefault();
-                        var propertyValue = Convert.ChangeType(firstValue, property.PropertyType);
-                        property.SetMethod.Invoke(paramaterValue, new object[] { propertyValue });
+                        if (property.PropertyType.GetInterfaces().Any(
+                            i => i.IsGenericType &&
+                                 i.GetGenericTypeDefinition() == typeof(IEnumerable<>)
+                                 && property.PropertyType != typeof(string)))
+                        {
+                            var propertyValue = (IList)Activator.CreateInstance(property.PropertyType);
+                            foreach (var obj in propertyHttpDataValue)
+                            {
+                                propertyValue.Add(Convert.ChangeType(obj, property.PropertyType.GenericTypeArguments[0]));
+                            }
+                            propertyValue.Add(propertyValue);
+                            
+                        }
+                        else
+                        {
+                            var firstValue = propertyHttpDataValue.FirstOrDefault();
+                            var propertyValue = Convert.ChangeType(firstValue, property.PropertyType);
+                            property.SetMethod.Invoke(paramaterValue, new object[] {propertyValue});
+                        }
                     }
 
                     parameterValues.Add(paramaterValue);
