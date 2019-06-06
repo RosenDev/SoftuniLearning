@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using App.Data;
 using App.Models;
 using App.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using SIS.MvcFramework.Mapping;
 
 namespace App.Services
@@ -60,7 +61,10 @@ namespace App.Services
             using (var context = new AppDbContext())
             {
                 password = MD5(password);
-                var user = context.Users.FirstOrDefault(x => x.Username == username && x.Password == password);
+                var user = context
+                    .Users
+                    .SingleOrDefault(x => x.Username == username && x.Password == password);
+                
                 return user.To<UserViewModel>();
             }
         }

@@ -124,12 +124,12 @@ namespace SIS.HTTP.Request
                     if (!QueryData.ContainsKey(keyValue[0]))
                     {
 
-                        QueryData.Add(keyValue[0], new List<object>{keyValue[1]});
+                        QueryData.Add(keyValue[0], new List<object> {WebUtility.UrlDecode(keyValue[1])});
 
                     }
                     else
                     {
-                        QueryData[keyValue[0]].Add(keyValue[1]);
+                        QueryData[keyValue[0]].Add(WebUtility.UrlDecode(keyValue[1]));
                     }
                 }
             }
@@ -147,11 +147,11 @@ namespace SIS.HTTP.Request
                         var keyValue = param.Split("=");
                         if (!FormData.ContainsKey(keyValue[0]))
                         {
-                            FormData.Add(keyValue[0], new List<object>{keyValue[1]});
+                            FormData.Add(keyValue[0], new List<object>{ WebUtility.UrlDecode(keyValue[1]) });
                         }
                         else
                         {
-                            FormData[keyValue[0]].Add(keyValue[1]);
+                            FormData[keyValue[0]].Add(WebUtility.UrlDecode(keyValue[1]));
                         }
                     });
             }
