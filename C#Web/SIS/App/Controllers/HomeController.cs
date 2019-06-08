@@ -20,21 +20,21 @@ namespace App.Controllers
         }
         [HttpGet(path:"/")]
 
-        public ActionResult Index()
+        public IActionResult Index()
         {
            
             return View();
         }
         [HttpGet]
         [Authorized]
-        public ActionResult IndexLogged()
+        public IActionResult IndexLogged()
         {
            
             var username = ((Principal)Request.Session.GetParameter("principal")).Username;
             using (var context= new AppDbContext())
             {
                 var user = context.Users.FirstOrDefault(x=>x.Username==username);
-
+                
                 return View(user);
             }
         }

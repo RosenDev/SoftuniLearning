@@ -8,6 +8,7 @@
     <ProjectReference Include="..\App.Data\App.Data.csproj" />
     <ProjectReference Include="..\App.Models\App.Models.csproj" />
     <ProjectReference Include="..\App\App.csproj" />
+    <ProjectReference Include="..\SIS.WebServer\SIS.WebServer.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,21 +1,26 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using App.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using SIS.WebServer.Identity;
+using SIS.WebServer.Validation;
 
 namespace SIS.WebServer.ViewEngine
 {
     public class SisViewEngine : IViewEngine
     {
-        public object WebUtilitycode { get; private set; }
+        private string EscapeHtml(string html)
+        {
+            return html.Replace("&", " &amp")
+                .Replace("<", "&lt")
+                .Replace(">", "&gt");
+        }
         private string GetModelType<T>(T model)
         {
             if (model is IEnumerable)
@@ -26,9 +31,10 @@ namespace SIS.WebServer.ViewEngine
             return model.GetType().FullName;
         }
 
-        public string GetHtml<T>(string viewContent, T model, Principal user = null)
+        public string GetHtml<T>(string viewContent, T model, ModelStateDictionary modelState, Principal user = null)
         {
-            string csharpHtmlCode = this.GetCSharpCode(viewContent);
+         string csharpHtmlCode = this.CheckForWidgets(viewContent);
+            csharpHtmlCode = this.GetCSharpCode(csharpHtmlCode);
             string code = $@"
 using System;
 using System.Net;
@@ -37,14 +43,16 @@ using System.Text;
 using System.Collections.Generic;
 using SIS.WebServer.ViewEngine;
 using SIS.WebServer.Identity;
+using SIS.WebServer.Validation;
 namespace AppViewCodeNamespace
 {{
     public class AppViewCode : IView
     {{
-        public string GetHtml(object model, Principal user)
+        public string GetHtml(object model,ModelStateDictionary modelState, Principal user)
         {{
             var Model = {(model == null ? "new {}" : "model as " + GetModelType(model))};
-            var User = user;            
+            var User = user;       
+            var ModelState= modelState;
 	        var html = new StringBuilder();
             {csharpHtmlCode}
             
@@ -52,12 +60,36 @@ namespace AppViewCodeNamespace
         }}
     }}
 }}";
-    
+            Console.WriteLine(csharpHtmlCode);
             var view = this.CompileAndInstance(code, model?.GetType().Assembly);
-            var htmlResult = view?.GetHtml(model, user);
+            var htmlResult = view?.GetHtml(model,modelState, user);
             return htmlResult;
         }
+        private string CheckForWidgets(string viewContent)
+        {
+            Console.WriteLine(Assembly.GetEntryAssembly());
+            //Check 
+            var widgets = Assembly
+                .GetEntryAssembly()?
+                .GetTypes()
+                .Where(type => typeof(IViewWidget).IsAssignableFrom(type))
+                .Select(x => (IViewWidget)Activator.CreateInstance(x))
+                .ToList();
 
+            if (widgets == null || widgets.Count == 0)
+            {
+                return viewContent;
+            }
+
+            string widgetPrefix = "@Widgets.";
+
+            foreach (var viewWidget in widgets)
+            {
+                viewContent = viewContent.Replace($"{widgetPrefix}{viewWidget.GetType().Name}", viewWidget.Render());
+            }
+
+            return viewContent;
+        }
         private string GetCSharpCode(string viewContent)
         {
             // TODO: { var a = "Niki"; }

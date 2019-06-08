@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using App.Data;
-using App.Extensions;
-using App.Models;
 using App.Services;
-using App.ViewModels;
 using App.ViewModels.AlbumViewModels;
 using SIS.WebServer;
 using SIS.WebServer.Attributes;
@@ -23,7 +17,7 @@ namespace App.Controllers
         }
         [HttpGet]
         [Authorized]
-        public ActionResult All()
+        public IActionResult All()
         {
             var all = albumService.GetAll();
                 return View(all.ToList());
@@ -32,7 +26,7 @@ namespace App.Controllers
 
     [HttpGet]
     [Authorized]
-        public ActionResult Details(string id)
+        public IActionResult Details(string id)
         {
             var albumId = Guid.Parse(id);
             var album = albumService.GetAlbum(albumId);
@@ -41,21 +35,19 @@ namespace App.Controllers
         }
         [HttpGet]
         [Authorized]
-        public ActionResult Create()
+        public IActionResult Create()
         {
             return View();
 
         }
         [Authorized]
         [HttpPost(action:"Create")]
-        public ActionResult CreateConfirm(string cover, string name)
+        public IActionResult CreateConfirm(AlbumCreateViewModel albumModel)
         {
-            var albumModel= new AlbumCreateViewModel
-           {
-               Cover = cover,
-               Name = name
-
-           };
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
             var album = albumService.CreateAlbum(albumModel);
 
            return Redirect($"/Albums/Details?id={album.Id}");

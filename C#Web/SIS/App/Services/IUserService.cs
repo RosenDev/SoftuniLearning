@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using App.Models;
 using App.ViewModels;
 
 namespace App.Services
@@ -7,6 +8,6 @@ namespace App.Services
     {
         UserViewModel CreateUser(UserViewModel user);
      Task<UserViewModel> CreateUserAsync(UserViewModel user);
-        UserViewModel GetUser(string username, string password);
+        User GetUser(string username, string password);
     }
 }

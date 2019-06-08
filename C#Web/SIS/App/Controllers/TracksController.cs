@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using App.Data;
 using SIS.WebServer;
-using App.Extensions;
-using App.Models;
 using App.Services;
-using App.ViewModels.AlbumViewModels;
 using App.ViewModels.TrackViewModels;
 using SIS.WebServer.Attributes;
 using SIS.WebServer.Results;
@@ -23,7 +17,7 @@ namespace App.Controllers
             this.albumService = albumService;
         }
         [Authorized]
-        public ActionResult Details(string albumId, string trackId)
+        public IActionResult Details(string albumId, string trackId)
         {
             var track = trackService.GetTrack(Guid.Parse(trackId));
 
@@ -35,7 +29,7 @@ namespace App.Controllers
                 return this.View(track);
         }
         [Authorized]
-        public ActionResult Create()
+        public IActionResult Create()
             {
                
                 var albumId = (string)Request.QueryData["albumId"][0];
@@ -46,25 +40,23 @@ namespace App.Controllers
             
             [HttpPost(action:"Create")]
             [Authorized]
-            public ActionResult CreateConfirm(string name, string link, decimal price)
+            public IActionResult CreateConfirm(TrackCreateViewModel trackForDb)
             {
 
                 var albumId = Guid.Parse((string)Request.QueryData["albumId"][0]);
 
-               
-                    var albumFromDb = albumService.GetAlbum(albumId);
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+            var albumFromDb = albumService.GetAlbum(albumId);
 
                     if (albumFromDb == null)
                     {
                         return this.Redirect("/Albums/All");
                     }
 
-                    var trackForDb = new TrackCreateViewModel
-                    {
-                        Name = name,
-                        Link = link,
-                        Price = price
-                    };
+                    
                     albumService.AddTrackToAlbum(albumId, trackForDb);
                 
 

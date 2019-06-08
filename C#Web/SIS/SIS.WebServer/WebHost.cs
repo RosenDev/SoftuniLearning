@@ -8,14 +8,17 @@ using SIS.HTTP.Request;
 using SIS.HTTP.Responce;
 using SIS.WebServer.Attributes;
 using SIS.WebServer.Attributes.Action;
+using SIS.WebServer.Attributes.Validation;
 using SIS.WebServer.Results;
 using SIS.WebServer.Routing;
+using SIS.WebServer.Validation;
 using IServiceProvider=SIS.WebServer.DependecyContainer.IServiceProvider;
 
 namespace SIS.WebServer
 {
     public  static class WebHost
     {
+        private static readonly IControllerState controllerState = new ControllerState();
         public static void Start(IMvcApplication mvcApplication)
         {
             IServerRoutingTable routingTable = new ServerRoutingTable();
@@ -78,8 +81,9 @@ namespace SIS.WebServer
             IHttpRequest request)
         {
             var controllerInstance = serviceProvider.CreateInstance(controllerType) as BaseController;
+            controllerState.SetState(controllerInstance);
             controllerInstance.Request = request;
-
+            
             // Security Authorization - TODO: Refactor this
             var controllerPrincipal = controllerInstance.User;
             var authorizeAttribute = action.GetCustomAttributes()
@@ -101,12 +105,9 @@ namespace SIS.WebServer
                     i.GetGenericTypeDefinition() == typeof(IEnumerable<>)
                     &&parameter.ParameterType!=typeof(string)))
                 {
-                    var parameterValue = (IList)Activator.CreateInstance(parameter.ParameterType);
-                    foreach (var obj in httpDataValue)
-                    {
-                        parameterValue.Add(Convert.ChangeType(obj,parameter.ParameterType.GenericTypeArguments[0]));
-                    }
-                        parameterValues.Add(parameterValue);
+                    var collection = httpDataValue.Select(x => System.Convert.ChangeType(x,
+                        parameter.ParameterType.GenericTypeArguments.First()));
+                    parameterValues.Add(collection);
                     continue;
                 } 
 
@@ -131,10 +132,10 @@ namespace SIS.WebServer
                             var propertyValue = (IList)Activator.CreateInstance(property.PropertyType);
                             foreach (var obj in propertyHttpDataValue)
                             {
-                                propertyValue.Add(Convert.ChangeType(obj, property.PropertyType.GenericTypeArguments[0]));
+                                propertyValue.Add(obj);
                             }
                             propertyValue.Add(propertyValue);
-                            
+                            property.SetMethod.Invoke(paramaterValue, new object[] { propertyValue });
                         }
                         else
                         {
@@ -143,7 +144,12 @@ namespace SIS.WebServer
                             property.SetMethod.Invoke(paramaterValue, new object[] {propertyValue});
                         }
                     }
-
+                    if (request.RequestMethod == HttpRequestMethod.Post)
+                    {
+                        controllerState.Reset();
+                        controllerInstance.ModelState = ValidateObject(paramaterValue);
+                        controllerState.Initialize(controllerInstance);
+                    }
                     parameterValues.Add(paramaterValue);
                 }
             }
@@ -152,6 +158,29 @@ namespace SIS.WebServer
             return response;
         }
 
+        private static ModelStateDictionary ValidateObject(object value)
+        {
+            var modelState= new ModelStateDictionary();
+            var properties = value.GetType().GetProperties();
+            foreach (var property in properties)
+            {
+                var validationAttributes = property
+                    .GetCustomAttributes()
+                    .Where(x => x is ValidationAttribute)
+                    .Cast<ValidationAttribute>()
+                    .ToList();
+                foreach (var validationAttribute in validationAttributes)
+                {
+                    if (validationAttribute.IsValid(property.GetValue(value)))
+                    {
+                        continue;
+                    }
+                    modelState.Add(property.Name,validationAttribute.ErrorMessage);
+                }
+            }
+
+            return modelState;
+        }
         private static List<object> TryGetHttpParameter(IHttpRequest request, string parameterName)
         {
             parameterName = parameterName.ToLower();

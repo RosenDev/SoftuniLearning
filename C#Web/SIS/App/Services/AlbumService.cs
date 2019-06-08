@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using App.Data;
 using App.Models;
-using App.ViewModels;
 using App.ViewModels.AlbumViewModels;
 using App.ViewModels.TrackViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +24,7 @@ namespace App.Services
             }
         }
 
-        public AlbumCreateViewModel CreateAlbum(AlbumCreateViewModel albumModel)
+        public Album CreateAlbum(AlbumCreateViewModel albumModel)
         {
             using (var context = new AppDbContext())
             {
@@ -38,7 +36,7 @@ namespace App.Services
                 };
                 context.Albums.Add(album);
                 context.SaveChanges();
-                return new AlbumCreateViewModel {Id = album.Id.ToString()};
+                return album;
             }
 
             

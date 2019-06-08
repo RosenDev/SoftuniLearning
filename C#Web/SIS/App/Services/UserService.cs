@@ -47,7 +47,7 @@ namespace App.Services
                     Username = userForDb.Username,
                     Password = userForDb.Password,
                     Email = userForDb.Email,
-                    Id = userForDb.Id.ToString()
+                 
 
                 };
 
@@ -56,7 +56,7 @@ namespace App.Services
 
         }
 
-        public UserViewModel GetUser(string username, string password)
+        public User GetUser(string username, string password)
         {
             using (var context = new AppDbContext())
             {
@@ -64,8 +64,8 @@ namespace App.Services
                 var user = context
                     .Users
                     .SingleOrDefault(x => x.Username == username && x.Password == password);
-                
-                return user.To<UserViewModel>();
+
+                return user;
             }
         }
         private string MD5(string password)

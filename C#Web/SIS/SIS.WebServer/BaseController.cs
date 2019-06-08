@@ -5,6 +5,7 @@ using SIS.HTTP.Request;
 using SIS.WebServer.Extensions;
 using SIS.WebServer.Identity;
 using SIS.WebServer.Results;
+using SIS.WebServer.Validation;
 using SIS.WebServer.ViewEngine;
 
 namespace SIS.WebServer
@@ -12,10 +13,11 @@ namespace SIS.WebServer
     public abstract class BaseController
     {
         private readonly IViewEngine viewEngine;
-
+        public ModelStateDictionary ModelState { get; set; }
         protected BaseController()
         {
             viewEngine=new SisViewEngine();
+            ModelState=new ModelStateDictionary();
         }
         protected Dictionary<string, object> ViewData = new Dictionary<string, object>();
         public IHttpRequest Request { get; set; }
@@ -67,9 +69,9 @@ namespace SIS.WebServer
                 viewName = viewName.Substring(0,viewName.IndexOf("Confirm"));
             }
             string viewContent = System.IO.File.ReadAllText(basePath+"Views" + "/" + controllerName + "/" + viewName + ".html");
-            viewContent = viewEngine.GetHtml(viewContent,model,User);
+            viewContent = viewEngine.GetHtml(viewContent,model,ModelState,User);
             var layout = System.IO.File.ReadAllText(basePath+"Views/"+"_Layout.html");
-            layout = viewEngine.GetHtml(layout, model, User);
+            layout = viewEngine.GetHtml(layout, model,ModelState, User);
             layout = layout.Replace("RenderBody()", viewContent);
             var result= new HtmlResult(layout,HttpResponseStatusCode.Ok);
             return result;

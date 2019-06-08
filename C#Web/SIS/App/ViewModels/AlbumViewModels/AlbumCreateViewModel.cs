@@ -1,10 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿
+
+using SIS.WebServer.Attributes.Validation;
 
 namespace App.ViewModels.AlbumViewModels
 {
     public class AlbumCreateViewModel
     {
-        public string Id { get; set; }
         [Required]
         public string Name { get; set; }
         [Required]

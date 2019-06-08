@@ -7,6 +7,7 @@ using App.Data;
 using App.Models;
 using App.Services;
 using App.ViewModels;
+using Microsoft.EntityFrameworkCore;
 using SIS.WebServer;
 using SIS.WebServer.Attributes;
 using SIS.WebServer.Extensions;
@@ -24,20 +25,25 @@ namespace App.Controllers
             userService = service;
         }
         [HttpGet]
-        public ActionResult Login()
+        public IActionResult Login()
         {
 
             return View();
         }
         
         [HttpPost(action:"Login")]
-        public ActionResult LoginConfirm(string username, string password)
+        public IActionResult LoginConfirm(string username, string password)
         {
+            var userViewModel= new UserViewModel
+            {
+                Username = username,
+                Password = password
+            };
            
-            var user = userService.GetUser(username, password);
+            var user = userService.GetUser(userViewModel.Username, userViewModel.Password);
                 if (user!=null)
                 {
-                    SignIn(user.Id,username,user.Email);
+                    SignIn(user.Id.ToString(),user.Username,user.Email);
                     if (Request.QueryData.ContainsKey("returnUrl"))
                     {
                         return Redirect((string)Request.QueryData["returnUrl"][0]);
@@ -45,38 +51,35 @@ namespace App.Controllers
                    return Redirect("/Home/IndexLogged");
                 }
 
-                return Redirect("/Users/Login");
+            return Redirect("/Users/Login");
         }
 
         [HttpGet]
-        public ActionResult Register()
+        public IActionResult Register()
         {
             return View();
 
         }
 
         [HttpPost(action:"Register")]
-        public ActionResult RegisterConfirm(string username, string password
-            , string confirmPassword,string email)
+        public IActionResult RegisterConfirm(UserViewModel user)
         {
-            if (password==confirmPassword)
+            if (!ModelState.IsValid)
             {
-                var user = new UserViewModel
-                {
-                    Username = username,
-                    Password = password,
-                    Email = email
-                };
+                return View();
+            }
+            if (user.Password==user.ConfirmPassword)
+            {
+              
                 var result = userService.CreateUser(user);
-                Console.WriteLine(result.Id + " " + result.Username);
-                return Login();
+                return Redirect("/Users/Login");
             }
             
 
             return View();
         }
         
-        public ActionResult Logout()
+        public IActionResult Logout()
         {
             SignOut();
             return Redirect($"/Users/Login");

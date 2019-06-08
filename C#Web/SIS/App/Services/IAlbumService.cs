@@ -9,7 +9,7 @@ namespace App.Services
 {
     public interface IAlbumService
     {
-        AlbumCreateViewModel CreateAlbum(AlbumCreateViewModel album);
+        Album CreateAlbum(AlbumCreateViewModel album);
 
         AlbumDetailsViewModel GetAlbum(Guid id);
 

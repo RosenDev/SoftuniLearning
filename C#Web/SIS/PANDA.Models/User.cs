@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using PANDA.Models.Enums;
 
 namespace PANDA.Models
@@ -17,6 +18,8 @@ namespace PANDA.Models
 
         public Role Role { get; set; }
 
+        public ICollection<Package> Packages { get; set; }
 
+        public ICollection<Receipt> Receipts { get; set; }
     }
 }
