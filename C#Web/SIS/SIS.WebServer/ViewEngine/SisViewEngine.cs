@@ -13,6 +13,9 @@ using SIS.WebServer.Validation;
 
 namespace SIS.WebServer.ViewEngine
 {
+    /// <summary>
+    /// View Engine that parses views in SIS Framework
+    /// </summary>
     public class SisViewEngine : IViewEngine
     {
         private string EscapeHtml(string html)
@@ -30,7 +33,16 @@ namespace SIS.WebServer.ViewEngine
 
             return model.GetType().FullName;
         }
-
+        /// <summary>
+        /// Gets HTML from unparsed view, parses it and return it as ready View 
+        /// </summary>
+        /// <typeparam name="T">Generic type for the model.</typeparam>
+        /// <param name="viewContent">The view content that must be parsed.</param>
+        /// <param name="model">Model used in the view content.</param>
+        /// <param name="modelState">The s</param>
+        /// <param name="user"></param>
+        /// <returns>string</returns>
+        /// <see cref="IView"/>
         public string GetHtml<T>(string viewContent, T model, ModelStateDictionary modelState, Principal user = null)
         {
          string csharpHtmlCode = this.CheckForWidgets(viewContent);

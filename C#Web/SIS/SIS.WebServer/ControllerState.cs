@@ -15,12 +15,12 @@ namespace SIS.WebServer
             ModelState=new ModelStateDictionary();
         }
 
-        public void Initialize(BaseController controller)
+        public void Initialize(Controller controller)
         {
             ModelState = controller.ModelState;
         }
 
-        public void SetState(BaseController controller)
+        public void SetState(Controller controller)
         {
              controller.ModelState=ModelState;
         }

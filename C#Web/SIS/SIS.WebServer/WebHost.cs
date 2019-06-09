@@ -16,9 +16,16 @@ using IServiceProvider=SIS.WebServer.DependecyContainer.IServiceProvider;
 
 namespace SIS.WebServer
 {
+    /// <summary>
+    /// The base starer of any SIS MVC App 
+    /// </summary>
     public  static class WebHost
     {
         private static readonly IControllerState controllerState = new ControllerState();
+        /// <summary>
+        /// Starts an mvcApplication
+        /// </summary>
+        /// <param name="mvcApplication">The mvcApplication</param>
         public static void Start(IMvcApplication mvcApplication)
         {
             IServerRoutingTable routingTable = new ServerRoutingTable();
@@ -35,7 +42,7 @@ namespace SIS.WebServer
         {
             app.GetType().Assembly.GetTypes()
                 .Where(x => x.IsClass && !x.IsAbstract 
-                                      && x.IsSubclassOf(typeof(BaseController)))
+                                      && x.IsSubclassOf(typeof(Controller)))
                 .ToList().ForEach(controller =>
                 {
                     var actions = controller
@@ -80,7 +87,7 @@ namespace SIS.WebServer
             MethodInfo action,
             IHttpRequest request)
         {
-            var controllerInstance = serviceProvider.CreateInstance(controllerType) as BaseController;
+            var controllerInstance = serviceProvider.CreateInstance(controllerType) as Controller;
             controllerState.SetState(controllerInstance);
             controllerInstance.Request = request;
             

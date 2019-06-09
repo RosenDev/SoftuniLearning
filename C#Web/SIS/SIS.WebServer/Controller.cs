@@ -10,11 +10,11 @@ using SIS.WebServer.ViewEngine;
 
 namespace SIS.WebServer
 {
-    public abstract class BaseController
+    public abstract class Controller
     {
         private readonly IViewEngine viewEngine;
         public ModelStateDictionary ModelState { get; set; }
-        protected BaseController()
+        protected Controller()
         {
             viewEngine=new SisViewEngine();
             ModelState=new ModelStateDictionary();
@@ -41,13 +41,12 @@ namespace SIS.WebServer
             return viewContent;
         }
 
-        protected void SignIn(string id, string username, string email)
+        protected void SignIn(string id, string username)
         {
             Request.Session.AddParameter("principal", new Principal
             {
                 Id = id,
                 Username = username,
-                Email = email
             });
         }
 

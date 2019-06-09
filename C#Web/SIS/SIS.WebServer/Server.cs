@@ -6,6 +6,9 @@ using SIS.WebServer.Routing;
 
 namespace SIS.WebServer
 {
+    /// <summary>
+    /// Server
+    /// </summary>
     public class Server
     {
         private const string LocalHostIp = "127.0.0.1";

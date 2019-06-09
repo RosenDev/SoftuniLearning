@@ -10,8 +10,8 @@ namespace SIS.WebServer
 
         void Reset();
 
-        void Initialize(BaseController controller);
+        void Initialize(Controller controller);
 
-        void SetState(BaseController controller);
+        void SetState(Controller controller);
     }
 }
