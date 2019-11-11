@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using PANDA.Models.Enums;
 
 namespace PANDA.Models
 {
     public class Package
     {
-        public Guid Id { get; set; }
+        public Package()
+        {
+            Receipts=new HashSet<Receipt>();
+        }
+        public string Id { get; set; }
 
         public string Description { get; set; }
 
@@ -13,12 +18,15 @@ namespace PANDA.Models
 
         public string ShippingAddress { get; set; }
 
-        public Status Status { get; set; }
+        public PackageStatus PackageStatus { get; set; }
 
         public DateTime EstimatedDeliveryDate { get; set; }
 
-        public Guid RecipientId { get; set; }
+        public string RecipientId { get; set; }
         public User Recipient { get; set; }
+
+        public ICollection<Receipt> Receipts { get; set; }
+
 
     }
 }

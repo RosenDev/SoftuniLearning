@@ -7,7 +7,7 @@ using SIS.WebServer.Results;
 
 namespace App.Controllers
 {
-    public class TracksController : BaseController
+    public class TracksController : Controller
     {
         private readonly ITrackService trackService;
         private readonly IAlbumService albumService;

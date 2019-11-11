@@ -71,7 +71,7 @@ namespace SIS.WebServer
             viewContent = viewEngine.GetHtml(viewContent,model,ModelState,User);
             var layout = System.IO.File.ReadAllText(basePath+"Views/"+"_Layout.html");
             layout = viewEngine.GetHtml(layout, model,ModelState, User);
-            layout = layout.Replace("RenderBody()", viewContent);
+            layout = layout.Replace("@RenderBody()", viewContent);
             var result= new HtmlResult(layout,HttpResponseStatusCode.Ok);
             return result;
         }

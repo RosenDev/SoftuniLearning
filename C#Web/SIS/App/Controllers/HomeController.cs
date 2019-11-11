@@ -12,7 +12,7 @@ using SIS.WebServer.Results;
 
 namespace App.Controllers
 {
-    public class HomeController:BaseController
+    public class HomeController:Controller
     {
         public HomeController()
         {

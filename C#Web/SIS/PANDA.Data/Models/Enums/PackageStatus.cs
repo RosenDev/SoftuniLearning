@@ -1,6 +1,6 @@
-﻿namespace PANDA.Models.Enums
+﻿namespace PANDA.Data.Models.Enums
 {
-    public enum Status
+    public enum PackageStatus
     {
         Pending=1,
         Shipped=2,

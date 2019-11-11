@@ -1,5 +1,4 @@
 ﻿using System;
-using App.Models;
 using SIS.WebServer.Identity;
 
 namespace SIS.WebServer.Attributes

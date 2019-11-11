@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using SIS.HTTP.Exceptions;
 using SIS.WebServer.Identity;
 using SIS.WebServer.Validation;
 
@@ -64,7 +65,7 @@ namespace AppViewCodeNamespace
         {{
             var Model = {(model == null ? "new {}" : "model as " + GetModelType(model))};
             var User = user;       
-            var ModelState= modelState;
+            var ModelState = modelState;
 	        var html = new StringBuilder();
             {csharpHtmlCode}
             
@@ -72,14 +73,12 @@ namespace AppViewCodeNamespace
         }}
     }}
 }}";
-            Console.WriteLine(csharpHtmlCode);
             var view = this.CompileAndInstance(code, model?.GetType().Assembly);
             var htmlResult = view?.GetHtml(model,modelState, user);
             return htmlResult;
         }
         private string CheckForWidgets(string viewContent)
         {
-            Console.WriteLine(Assembly.GetEntryAssembly());
             //Check 
             var widgets = Assembly
                 .GetEntryAssembly()?
@@ -206,7 +205,6 @@ namespace AppViewCodeNamespace
         private IView CompileAndInstance(string code, Assembly modelAssembly)
         {
             modelAssembly = modelAssembly ?? Assembly.GetEntryAssembly();
-
             var compilation = CSharpCompilation.Create("AppViewAssembly")
                 .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary))
                 .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly.Location))

@@ -6,9 +6,12 @@ namespace PANDA.Models
 {
     public class User
     {
-       
-        public Guid Id  { get; set;}
-        
+        public User()
+        {
+            Packages = new HashSet<Package>();
+            Receipts = new HashSet<Receipt>();
+        }
+        public string Id  { get; set;}
         
         public string Username { get; set; }
 
@@ -16,7 +19,7 @@ namespace PANDA.Models
 
         public string Email { get; set; }
 
-        public Role Role { get; set; }
+        public UserRole UserRole { get; set; }
 
         public ICollection<Package> Packages { get; set; }
 

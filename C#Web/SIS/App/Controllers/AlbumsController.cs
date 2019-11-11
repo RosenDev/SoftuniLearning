@@ -8,7 +8,7 @@ using SIS.WebServer.Results;
 
 namespace App.Controllers
 {
-    public class AlbumsController : BaseController
+    public class AlbumsController : Controller
     {
         private readonly IAlbumService albumService;
         public AlbumsController(IAlbumService albumService)

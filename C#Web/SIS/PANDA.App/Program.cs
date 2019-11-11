@@ -1,4 +1,4 @@
-﻿using System;
+﻿using SIS.MvcFramework;
 
 namespace PANDA.App
 {
@@ -6,7 +6,7 @@ namespace PANDA.App
     {
         public static void Main(string[] args)
         {
-          
+          WebHost.Start(new Startup());
         }
     }
 }

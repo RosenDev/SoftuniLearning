@@ -16,7 +16,7 @@ using  IServiceProvider=SIS.WebServer.DependecyContainer.IServiceProvider;
 
 namespace App.Controllers
 {
-    public class UsersController:BaseController
+    public class UsersController:Controller
     {
         private readonly IUserService userService;
 
@@ -43,7 +43,7 @@ namespace App.Controllers
             var user = userService.GetUser(userViewModel.Username, userViewModel.Password);
                 if (user!=null)
                 {
-                    SignIn(user.Id.ToString(),user.Username,user.Email);
+                    SignIn(user.Id.ToString(),user.Username);
                     if (Request.QueryData.ContainsKey("returnUrl"))
                     {
                         return Redirect((string)Request.QueryData["returnUrl"][0]);
