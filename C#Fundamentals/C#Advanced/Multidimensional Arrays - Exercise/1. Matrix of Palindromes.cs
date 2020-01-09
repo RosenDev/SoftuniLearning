@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace PaskalTriangle
+namespace Matrix_of_Palindromes
 {
     class Program
     {

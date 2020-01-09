@@ -2,12 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices.ComTypes;
-using System.Security.Cryptography.X509Certificates;
 
-
-namespace 08. Custom Comparator
+namespace Custom_Comparator
 {
  
    

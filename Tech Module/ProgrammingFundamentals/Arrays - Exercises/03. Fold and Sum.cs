@@ -15,8 +15,10 @@ namespace Arrays
             int[] left = arr.Take(k).ToArray();
             int[] middle = arr.Skip(k).Take(2 * k).ToArray();
             int[] right = arr.Skip(3 * k).Take(k).ToArray();
+         
             Array.Reverse(right);
             Array.Reverse(left);
+            
             int[] result = new int[2 * k];
             for (int i = 0; i < k; i++)
             {
@@ -24,16 +26,8 @@ namespace Arrays
                 result[i] = left[i] + middle[i];
                 result[i + k] = right[i] + middle[i + k];
 
-
-
             }
             Console.WriteLine(string.Join(" ",result));
-
-
-
-
-
-
         }
 
     }

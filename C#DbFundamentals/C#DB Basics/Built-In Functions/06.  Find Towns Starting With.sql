@@ -1,0 +1,1 @@
+SELECT * FROM Towns WHERE SUBSTRING(NAME,1,1) IN ('M','B','K','E') ORDER BY Name

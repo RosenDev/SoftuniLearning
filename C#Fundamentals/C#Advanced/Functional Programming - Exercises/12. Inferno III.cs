@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace 12. Inferno III
+namespace Inferno_III
 {
     class Program
     {

@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 using System.Security.Cryptography.X509Certificates;
 
 
-namespace 06._Reverse_And_Exclude
+namespace Reverse_And_Exclude
 {
  
    

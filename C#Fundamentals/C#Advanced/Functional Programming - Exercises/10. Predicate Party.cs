@@ -9,15 +9,12 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Security.Cryptography.X509Certificates;
 
 
-namespace 10. Predicate Party
+namespace Predicate_Party
 {
- 
    
     class Program
     {
-
-
-        
+       
         static void Main(string[] args)
         {
 

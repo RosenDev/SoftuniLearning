@@ -1,4 +1,4 @@
-namespace 07. Predicate For Names
+namespace Predicate_For_Names
 {
     using System;
     using System.Collections.Generic;

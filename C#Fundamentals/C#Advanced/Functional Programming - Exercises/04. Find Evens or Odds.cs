@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 using System.Security.Cryptography.X509Certificates;
 
 
-namespace 04._Find_Evens_or_Odds
+namespace Find_Evens_or_Odds
 {
  
    

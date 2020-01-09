@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 using System.Security.Cryptography.X509Certificates;
 
 
-namespace 05._Applied_Arithmetics
+namespace Applied_Arithmetics
 {
  
    

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace 13. TriFunction
+namespace TriFunction
 {
     class Program
     {

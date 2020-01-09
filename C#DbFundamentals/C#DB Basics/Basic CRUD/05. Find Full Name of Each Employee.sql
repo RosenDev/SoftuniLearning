@@ -1,0 +1,1 @@
+SELECT FirstName,ISNULL(MiddleName,''),LastName FROM Employees

@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Reflection.Emit;
-using System.Security.Cryptography.X509Certificates;
 
 
-namespace 03._Custom_Min_Function
+namespace Custom_Min_Function
 {
  
    

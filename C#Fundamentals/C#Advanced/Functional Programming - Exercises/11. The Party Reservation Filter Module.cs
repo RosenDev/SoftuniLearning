@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace 11. The Party Reservation Filter Module
+namespace The_Party_Reservation_Filter_Module
 {
     class Program
     {

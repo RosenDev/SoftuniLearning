@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace 09. List Of Predicates
+namespace List_Of_Predicates
 {
     class Program
     {
